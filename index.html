@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurinkokunta 3D</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./libs/three.module.js",
+      "three/addons/controls/OrbitControls.js": "./libs/OrbitControls.js",
+      "three/addons/renderers/CSS2DRenderer.js": "./libs/CSS2DRenderer.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <header id="title">
+    <h1>Aurinkokunta</h1>
+    <p>Planeettojen sijainnit lasketaan valitulle ajanhetkelle.<br>
+       Pyöritä vasemmalla napilla, panoroi oikealla, lähennä rullalla.<br>
+       Klikkaa planeettaa zoomataksesi — Esc palauttaa kokonaiskuvaan.</p>
+  </header>
+
+  <div id="timebar">
+    <div id="clock">–</div>
+    <div class="row">
+      <button id="nowBtn" title="Palaa nykyhetkeen">Nyt</button>
+      <button id="playBtn" title="Pysäytä ajan kulku" aria-label="Pysäytä ajan kulku">⏸</button>
+      <input type="range" id="speed" min="0" max="10" step="1" value="5">
+      <span id="speedLabel">Reaaliaika</span>
+    </div>
+    <div class="row">
+      <label for="dateInput">Siirry päivään:</label>
+      <input type="datetime-local" id="dateInput">
+    </div>
+
+    <div class="section" id="eventsSection">
+      <button id="eventsToggle" class="accordion" aria-expanded="false" aria-controls="eventsPanel">
+        Hyppää tapahtumaan
+        <span class="chevron" aria-hidden="true">›</span>
+      </button>
+      <div class="collapsible" id="eventsPanel">
+        <div class="collapsible-inner">
+          <div class="egrid">
+            <button data-ev="moonphase" data-dir="-1" title="Edellinen täysikuu tai uusikuu">‹</button>
+            <span>Täysikuu / uusikuu</span>
+            <button data-ev="moonphase" data-dir="1" title="Seuraava täysikuu tai uusikuu">›</button>
+
+            <button data-ev="season" data-dir="-1" title="Edellinen seisaus tai tasaus">‹</button>
+            <span>Seisaus / tasaus</span>
+            <button data-ev="season" data-dir="1" title="Seuraava seisaus tai tasaus">›</button>
+
+            <button data-ev="opposition" data-dir="-1" title="Edellinen oppositio">‹</button>
+            <span>Oppositio</span>
+            <button data-ev="opposition" data-dir="1" title="Seuraava oppositio">›</button>
+          </div>
+          <p id="eventInfo"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <button id="overviewBtn" class="wide">Koko aurinkokunta</button>
+    </div>
+  </div>
+
+  <aside id="panel">
+    <button id="panelClose" aria-label="Sulje">×</button>
+    <h2 id="panelName"></h2>
+    <p id="panelDesc"></p>
+    <p id="factHint"><span id="factCount"></span> · klikkaa uudelleen</p>
+    <dl id="panelData"></dl>
+  </aside>
+
+  <footer id="credits">Tekstuurit: Solar System Scope (CC BY 4.0) · Ratalaskenta: JPL:n likimääräiset rataelementit</footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

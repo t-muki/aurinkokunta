@@ -40,6 +40,8 @@ Deploy from a branch → main / (root)*.
   kiihtyen ja hidastuen, jolloin planeettojen liike matkan varrella näkyy.
   Kesto kasvaa hypyn pituuden mukaan. Nopeussäätimen koskettaminen keskeyttää
   kelauksen välittömästi
+- Oikean alanurkan info-painike avaa paneelin, jossa on käyttöohjeet,
+  mittakaavojen selitys, laskennan tarkkuustiedot sekä lähteet ja lisenssit
 - Jokaisesta kappaleesta on viisi faktaa, joista näytetään aina seuraava, kun
   kappaletta klikkaa uudelleen. Tekstit ovat tiedostossa `js/facts.js`, ja
   listoihin saa vapaasti lisätä uusia

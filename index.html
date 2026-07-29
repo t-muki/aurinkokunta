@@ -20,9 +20,6 @@
 
   <header id="title">
     <h1>Aurinkokunta</h1>
-    <p>Planeettojen sijainnit lasketaan valitulle ajanhetkelle.<br>
-       Pyöritä vasemmalla napilla, panoroi oikealla, lähennä rullalla.<br>
-       Klikkaa planeettaa zoomataksesi — Esc palauttaa kokonaiskuvaan.</p>
   </header>
 
   <div id="timebar">
@@ -69,15 +66,60 @@
     </div>
   </div>
 
-  <aside id="panel">
-    <button id="panelClose" aria-label="Sulje">×</button>
+  <aside id="panel" class="sidepanel">
+    <button id="panelClose" class="panelclose" aria-label="Sulje">×</button>
     <h2 id="panelName"></h2>
     <p id="panelDesc"></p>
     <p id="factHint"><span id="factCount"></span> · klikkaa uudelleen</p>
     <dl id="panelData"></dl>
   </aside>
 
-  <footer id="credits">Tekstuurit: Solar System Scope (CC BY 4.0) · Ratalaskenta: JPL:n likimääräiset rataelementit</footer>
+  <button id="infoBtn" aria-label="Tietoa mallista" title="Tietoa mallista" aria-expanded="false">i</button>
+
+  <aside id="infoPanel" class="sidepanel">
+    <button id="infoClose" class="panelclose" aria-label="Sulje">×</button>
+    <h2>Tietoa mallista</h2>
+    <p class="lead">Planeettojen ja Kuun sijainnit lasketaan valitulle ajanhetkelle
+       todellisista ratatiedoista — malli ei ole animaatio vaan laskee asemat joka
+       ruudunpäivityksellä.</p>
+
+    <h3>Käyttö</h3>
+    <ul>
+      <li>Pyöritä vasemmalla hiirinäppäimellä, panoroi oikealla, lähennä rullalla.</li>
+      <li>Klikkaa planeettaa zoomataksesi siihen. Uusi klikkaus näyttää seuraavan faktan.</li>
+      <li>Esc palauttaa kokonaiskuvaan.</li>
+      <li>Aikapalkista voit pysäyttää ajan, säätää sen nopeutta tai hypätä tapahtumiin.</li>
+    </ul>
+
+    <h3>Mittakaavat</h3>
+    <p>Koot ja etäisyydet on puristettu, jotta kaikki mahtuu samaan kuvaan mutta
+       kokoerot pysyvät havainnollisina. Aurinko ei ole mittakaavassa. Kuun etäisyys
+       Maasta on liioiteltu noin kaksikymmenkertaisesti, mutta sen suunta vastaa
+       todellista.</p>
+
+    <h3>Tarkkuus</h3>
+    <p>Sijainnit perustuvat JPL:n likimääräisiin rataelementteihin, jotka pätevät
+       vuosina 1800–2050. Laskenta on tarkistettu tunnettuja arvoja vasten:</p>
+    <dl>
+      <dt>Kuun vaiheet</dt>
+      <dd>Uusikuu 6.1.2000 osui 0,00° ja täysikuu 21.1.2000 0,02° tarkkuudella</dd>
+      <dt>Päiväntasaukset ja seisaukset</dt>
+      <dd>1–11 minuutin sisällä julkaistuista ajoista</dd>
+      <dt>Kuun sijainti</dt>
+      <dd>Noin 0,5°, mikä on yksinkertaistetun kuuteorian raja</dd>
+    </dl>
+    <p>Maan pyörähdysasento on sidottu aurinkoaikaan, joten vuorokauden- ja
+       vuodenajat näkyvät oikein.</p>
+
+    <h3>Lähteet</h3>
+    <ul>
+      <li>Tekstuurit: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0)</li>
+      <li>Ratalaskenta: JPL, <i>Approximate Positions of the Planets</i></li>
+      <li>Kuun teoria: Paul Schlyterin yksinkertaistettu malli</li>
+      <li>Kolmiulotteisen grafiikan moottori: <a href="https://threejs.org/" target="_blank" rel="noopener">Three.js</a></li>
+      <li>Lähdekoodi: <a href="https://github.com/t-muki/aurinkokunta" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+  </aside>
 
   <script type="module" src="js/main.js"></script>
 </body>

@@ -383,6 +383,25 @@ eventsToggle.addEventListener('click', () => {
 
 // --- Valinta, tietopaneeli ja kameran kohdistus ----------------------------
 const panel = document.getElementById('panel');
+const infoPanel = document.getElementById('infoPanel');
+const infoBtn = document.getElementById('infoBtn');
+
+// Sivupaneelit ovat samassa kohdassa, joten vain toinen voi olla auki
+const sidePanelOpen = () => panel.classList.contains('open') || infoPanel.classList.contains('open');
+
+// Info-nappi piiloon aina kun paneeli peittäisi sen
+function syncInfoBtn() {
+  infoBtn.classList.toggle('hidden', sidePanelOpen());
+  infoBtn.setAttribute('aria-expanded', String(infoPanel.classList.contains('open')));
+}
+
+function setInfoOpen(open) {
+  infoPanel.classList.toggle('open', open);
+  if (open) panel.classList.remove('open');
+  syncInfoBtn();
+}
+infoBtn.addEventListener('click', () => setInfoOpen(!infoPanel.classList.contains('open')));
+document.getElementById('infoClose').addEventListener('click', () => setInfoOpen(false));
 const overviewBtn = document.getElementById('overviewBtn');
 const innerBtn = document.getElementById('innerBtn');
 const raycaster = new THREE.Raycaster();
@@ -457,24 +476,33 @@ function selectBody(mesh) {
     <dt>Kiertoaika</dt><dd>${d.info.period}</dd>
     <dt>Pyörähdysaika</dt><dd>${d.info.day}</dd>
     <dt>Kuita</dt><dd>${d.info.moons}</dd>`;
+  setInfoOpen(false); // planeettatiedot korvaavat mallin tiedot
   panel.classList.add('open');
+  syncInfoBtn();
   setFocus(mesh);
 }
 
 function showPreset(preset) {
   panel.classList.remove('open');
+  syncInfoBtn();
   setFocus(null, preset);
 }
 
 document.getElementById('panelClose').addEventListener('click', () => {
   // Paneeli pois, mutta kohde säilyy — kuva rajataan uudelleen keskelle
   panel.classList.remove('open');
+  syncInfoBtn();
   if (focusObj) startCamAnim(500);
 });
 overviewBtn.addEventListener('click', () => showPreset('all'));
 innerBtn.addEventListener('click', () => showPreset('inner'));
 updateViewButtons();
-addEventListener('keydown', (e) => { if (e.key === 'Escape') showPreset('all'); });
+addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  // Esc sulkee ensin auki olevan tietopaneelin, vasta sitten palaa yleisnäkymään
+  if (infoPanel.classList.contains('open')) setInfoOpen(false);
+  else showPreset('all');
+});
 
 // Kuuntelijat samaan elementtiin kuin OrbitControls: se kaappaa osoittimen
 // (setPointerCapture) pointerdownissa, jolloin pointerup ohjautuu tähän
@@ -521,7 +549,7 @@ function computeGoal(useCurrentDistance) {
     const worldPerPx = 2 * Math.tan((camera.fov / 2) * DEG) * d / innerHeight;
 
     // Vaakasuunta: väistetään oikean laidan tietopaneelia
-    if (panel.classList.contains('open')) {
+    if (sidePanelOpen()) {
       camRight.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
       goalTarget.addScaledVector(camRight, (PANEL_W / 2) * worldPerPx);
     }

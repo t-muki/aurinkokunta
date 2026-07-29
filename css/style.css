@@ -271,19 +271,20 @@ html, body {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  /* Sama keltainen sävytys kuin aikapalkin painikkeilla */
-  background: rgba(255, 184, 77, 0.15);
-  border: 1px solid rgba(255, 184, 77, 0.5);
+  /* Keltainen jo perustilassa. Sävy on vahvempi kuin aikapalkin painikkeilla,
+     koska tumma taivas taustana himmentää läpinäkyvän värin lähes mustaksi. */
+  background: rgba(255, 184, 77, 0.34);
+  border: 1px solid rgba(255, 184, 77, 0.9);
   backdrop-filter: blur(8px);
-  color: #ffd98a;
+  color: #ffeac0;
   font-family: Georgia, serif;
   font-style: italic;
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1;
   cursor: pointer;
   transition: background 0.15s, opacity 0.25s;
 }
-#infoBtn:hover { background: rgba(255, 184, 77, 0.3); }
+#infoBtn:hover { background: rgba(255, 184, 77, 0.55); }
 /* Nappi pois näkyvistä, kun jompikumpi sivupaneeli peittäisi sen */
 #infoBtn.hidden {
   opacity: 0;

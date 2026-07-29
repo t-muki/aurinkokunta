@@ -92,11 +92,15 @@ function loadTex(file) {
   return t;
 }
 
-// Tähtitaivas
+// Tähtitaivas. Tekstuuri venytetään koko taivaalle, joten se tarvitsee
+// selvästi planeettoja suuremman tarkkuuden. Vanhemmilla laitteilla, jotka
+// eivät tue 4096 pikselin tekstuureja, käytetään pienempää versiota.
 {
-  const starTex = loadTex('2k_stars_milky_way.jpg');
+  const maxTex = renderer.capabilities.maxTextureSize;
+  const starTex = loadTex(maxTex >= 4096 ? '4k_stars_milky_way.jpg' : '2k_stars_milky_way.jpg');
+  starTex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   const sky = new THREE.Mesh(
-    new THREE.SphereGeometry(2000, 48, 24),
+    new THREE.SphereGeometry(2000, 64, 32),
     new THREE.MeshBasicMaterial({ map: starTex, side: THREE.BackSide })
   );
   sky.material.color.setScalar(0.55); // himmennetään taustaa hieman

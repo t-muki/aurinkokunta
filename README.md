@@ -76,6 +76,8 @@ havainnollistettu, mutta sen suunta vastaa todellista sijaintia.
 - Ratalaskenta: JPL, "Approximate Positions of the Planets" (Keplerin
   rataelementit epookille J2000)
 - Kuun teoria: Paul Schlyterin yksinkertaistettu malli häiriötermeineen
+- Kolmiulotteisen grafiikan moottori: [Three.js](https://threejs.org/) r160
+  (paikallisesti `libs/`-kansiossa)
 
 ## Tapahtumahaun tarkkuus
 
@@ -93,4 +95,3 @@ julkaistuihin arvoihin:
 | Kevätpäiväntasaus 2026 | 20.3. klo 14.42 UTC | 20.3. klo 14.46 UTC |
 
 Kuunvaiheiden tarkkuus on n. puoli tuntia (yksinkertaistetun kuuteorian raja).
-- 3D-moottori: [Three.js](https://threejs.org/) r160 (paikallisesti `libs/`-kansiossa)

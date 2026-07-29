@@ -384,19 +384,34 @@ eventsToggle.addEventListener('click', () => {
 // --- Valinta, tietopaneeli ja kameran kohdistus ----------------------------
 const panel = document.getElementById('panel');
 const overviewBtn = document.getElementById('overviewBtn');
+const innerBtn = document.getElementById('innerBtn');
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
-// Kokonaisnäkymän kameran asento
-const OVERVIEW_POS = new THREE.Vector3(0, 150, 300);
+// Yleisnäkymät: kamera samaan suuntaan, etäisyys lasketaan kuvakulmasta.
+// fill kertoo, kuinka suuren osan kuvan puolikkaasta leveydestä rata täyttää:
+// yli 1 = rata ulottuu reunan yli, alle 1 = mahtuu kokonaan näkyviin.
+const VIEW_DIR = new THREE.Vector3(0, 0.4472, 0.8944);
+const VIEW_PRESETS = {
+  all: { au: 30.1, fill: 1.55 },   // Neptunus reunan tuntumassa, kuten ennen
+  inner: { au: 1.52, fill: 0.72 }, // Marsin rata kokonaan kuvassa
+};
 const OVERVIEW_TARGET = new THREE.Vector3(0, 0, 0);
+
+function presetPos(preset, out) {
+  const p = VIEW_PRESETS[preset];
+  const halfFovH = Math.atan(Math.tan((camera.fov / 2) * DEG) * camera.aspect);
+  const dist = scaleDist(p.au) / (Math.tan(halfFovH) * p.fill);
+  return out.copy(VIEW_DIR).multiplyScalar(dist);
+}
 // Kuinka suuren osan ruudun korkeudesta kohde täyttää zoomattuna.
 // Pienempi arvo = kamera jää kauemmas ja kohteen ympärille jää tilaa.
 const FILL = 0.40;
 const PANEL_W = 300; // vastaa CSS:n paneelin leveyttä
 
-let focusObj = null;   // seurattava mesh, null = kokonaisnäkymä
-let camAnim = null;    // { t0, dur, fromPos, fromTarget }
+let focusObj = null;      // seurattava mesh, null = yleisnäkymä
+let viewPreset = 'all';   // kumpi yleisnäkymä on valittuna
+let camAnim = null;       // { t0, dur, fromPos, fromTarget }
 // Käyttäjän panoroima siirtymä kohteesta. Ilman tätä seuranta vetäisi
 // katsepisteen joka ruudunpäivityksellä takaisin planeettaan.
 const panOffset = new THREE.Vector3();
@@ -413,9 +428,16 @@ function startCamAnim(dur = 1100) {
   };
 }
 
-function setFocus(mesh) {
+// Painike himmenee, kun sen näkymä on jo valittuna
+function updateViewButtons() {
+  overviewBtn.disabled = !focusObj && viewPreset === 'all';
+  innerBtn.disabled = !focusObj && viewPreset === 'inner';
+}
+
+function setFocus(mesh, preset) {
   focusObj = mesh;
-  overviewBtn.disabled = !mesh;
+  if (!mesh && preset) viewPreset = preset;
+  updateViewButtons();
   panOffset.set(0, 0, 0); // uusi kohde keskitetään: klikkaus myös keskittää uudelleen
   startCamAnim();
 }
@@ -439,9 +461,9 @@ function selectBody(mesh) {
   setFocus(mesh);
 }
 
-function showOverview() {
+function showPreset(preset) {
   panel.classList.remove('open');
-  setFocus(null);
+  setFocus(null, preset);
 }
 
 document.getElementById('panelClose').addEventListener('click', () => {
@@ -449,9 +471,10 @@ document.getElementById('panelClose').addEventListener('click', () => {
   panel.classList.remove('open');
   if (focusObj) startCamAnim(500);
 });
-overviewBtn.addEventListener('click', showOverview);
-overviewBtn.disabled = true;
-addEventListener('keydown', (e) => { if (e.key === 'Escape') showOverview(); });
+overviewBtn.addEventListener('click', () => showPreset('all'));
+innerBtn.addEventListener('click', () => showPreset('inner'));
+updateViewButtons();
+addEventListener('keydown', (e) => { if (e.key === 'Escape') showPreset('all'); });
 
 // Kuuntelijat samaan elementtiin kuin OrbitControls: se kaappaa osoittimen
 // (setPointerCapture) pointerdownissa, jolloin pointerup ohjautuu tähän
@@ -487,7 +510,7 @@ const easeInOut = (k) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) 
 function computeGoal(useCurrentDistance) {
   if (!focusObj) {
     goalTarget.copy(OVERVIEW_TARGET);
-    goalPos.copy(OVERVIEW_POS);
+    presetPos(viewPreset, goalPos);
     return;
   }
   focusObj.getWorldPosition(goalTarget);

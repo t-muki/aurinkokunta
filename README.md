@@ -47,7 +47,9 @@ Deploy from a branch → main / (root)*.
   seuraamaan sitä. Panorointi (oikea hiirinäppäin tai ctrl/shift + veto) säilyy
   seurannan aikana, ja saman kohteen klikkaus keskittää sen uudelleen. Rajaus väistää käyttöliittymäpaneeleita, joten kohde asettuu
   vapaan alueen keskelle. Painike *Koko aurinkokunta* (tai Esc) palauttaa
-  kokonaiskuvaan
+  kokonaiskuvaan, *Sisäplaneetat* rajaa näkymän Marsin radan sisäpuolelle.
+  Yleisnäkymien etäisyys lasketaan kuvakulmasta ja ikkunan mittasuhteista,
+  joten rajaus pysyy oikeana myös ikkunan kokoa muutettaessa
 - Tapahtumahypyt edelliseen ja seuraavaan: täysikuu/uusikuu,
   päivänseisaus/-tasaus sekä Marsin, Jupiterin ja Saturnuksen oppositiot.
   Kukin painikepari siirtyy siihen ryhmän tapahtumaan, joka tulee ensin.

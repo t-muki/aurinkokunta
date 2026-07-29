@@ -183,7 +183,15 @@ html, body {
   min-width: 34px;
   font-size: 13px;
 }
-#timebar button.wide { width: 100%; padding: 7px; }
+/* Näkymäpainikkeet vierekkäin, tasaleveinä */
+#timebar .viewbuttons {
+  flex-direction: row;
+  gap: 8px;
+}
+#timebar .viewbuttons button {
+  flex: 1;
+  padding: 7px 4px;
+}
 #dateInput {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(140, 160, 200, 0.3);

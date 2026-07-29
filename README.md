@@ -1,4 +1,4 @@
-# Aurinkokunta 3D
+# Aurinkokunta
 
 Interaktiivinen kolmiulotteinen malli aurinkokunnasta. Planeettojen (ja Kuun)
 sijainnit lasketaan todellisen ajanhetken mukaan JPL:n likimääräisistä

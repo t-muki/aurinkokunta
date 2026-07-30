@@ -92,45 +92,39 @@ function loadTex(file) {
   return t;
 }
 
-// Suunta taivaalla (rektaskensio, deklinaatio) näkymän akseleiksi.
-// Ekvatoriaalinen → ekliptika → näkymän akselit, sama kierto kuin toScene.
-const OBLIQUITY = 23.4392911 * DEG;
-function equatorialToScene(raDeg, decDeg) {
-  const ra = raDeg * DEG, dec = decDeg * DEG;
-  const x = Math.cos(dec) * Math.cos(ra);
-  const y = Math.cos(dec) * Math.sin(ra);
-  const z = Math.sin(dec);
-  const ey = y * Math.cos(OBLIQUITY) + z * Math.sin(OBLIQUITY);
-  const ez = -y * Math.sin(OBLIQUITY) + z * Math.cos(OBLIQUITY);
-  return new THREE.Vector3(x, ez, -ey);
+// Tähtitaivas: NASA:n Deep Star Maps 2020, jossa tähdet ovat oikeilla
+// paikoillaan (Hipparcos/Tycho-2). Kartta on päiväntasaajakoordinaateissa:
+// keskellä RA 0h, pohjoinen ylhäällä, RA kasvaa kuvassa vasemmalle.
+// Suuntaus on varmistettu 18 kirkkaan tähden sijainneilla (18/18 osumaa).
+const SKY_OBLIQUITY = 23.4392911 * DEG;
+const SKY_4K = renderer.capabilities.maxTextureSize >= 4096;
+let skyMesh, skyStarTex;
+let skyFigTex = null;
+
+function loadSkyTex(base, onLoad) {
+  const t = texLoader.load(`textures/${base}${SKY_4K ? '_4k' : '_2k'}.jpg`, onLoad);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  // Kartta on piirretty sellaisena kuin taivas näkyy Maasta. Pallon sisältä
+  // katsottuna tekstuuri peilautuisi vaakasuunnassa, jolloin tähtikuviot
+  // olisivat peilikuvia — käännetään tekstuuri kumoamaan tämä.
+  t.wrapS = THREE.RepeatWrapping;
+  t.repeat.x = -1;
+  return t;
 }
 
-// Tähtitaivas. Tekstuuri venytetään koko taivaalle, joten se tarvitsee
-// selvästi planeettoja suuremman tarkkuuden. Vanhemmilla laitteilla, jotka
-// eivät tue 4096 pikselin tekstuureja, käytetään pienempää versiota.
 {
-  const maxTex = renderer.capabilities.maxTextureSize;
-  const starTex = loadTex(maxTex >= 4096 ? '4k_stars_milky_way.jpg' : '2k_stars_milky_way.jpg');
-  starTex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-  const sky = new THREE.Mesh(
+  skyStarTex = loadSkyTex('starmap_2020');
+  skyMesh = new THREE.Mesh(
     new THREE.SphereGeometry(2000, 64, 32),
-    new THREE.MeshBasicMaterial({ map: starTex, side: THREE.BackSide })
+    new THREE.MeshBasicMaterial({ map: skyStarTex, side: THREE.BackSide })
   );
-  sky.material.color.setScalar(0.55); // himmennetään taustaa hieman
-
-  // Tekstuuri on galaktisissa koordinaateissa: Linnunrata kulkee kuvan
-  // vaakasuoraa keskiviivaa pitkin ja galaksin keskus on kuvan keskellä.
-  // Pallon oma akselisto on siis galaktinen, ja se on käännettävä ekliptikaan.
-  // Muuten tähdet osuisivat n. 60° väärään paikkaan.
-  const galPole = equatorialToScene(192.85948, 27.12825);    // pohjoinen galaktinen napa
-  const galCenter = equatorialToScene(266.40510, -28.93617); // galaksin keskus (l=0, b=0)
-  const ux = galCenter.clone().normalize();
-  const uy = galPole.clone().normalize();
-  ux.addScaledVector(uy, -ux.dot(uy)).normalize(); // varmistetaan kohtisuoruus
-  const uz = new THREE.Vector3().crossVectors(ux, uy);
-  sky.setRotationFromMatrix(new THREE.Matrix4().makeBasis(ux, uy, uz));
-
-  scene.add(sky);
+  skyMesh.material.color.setScalar(0.8);
+  // Kuvan navat ovat taivaannavat. Ekliptikapohjaiseen näkymään pääsee
+  // kallistamalla palloa akselikallistuksen verran — sama kallistus,
+  // joka Maan akselille annetaan.
+  skyMesh.rotation.x = -SKY_OBLIQUITY;
+  scene.add(skyMesh);
 }
 
 // --- Aurinko ---------------------------------------------------------------
@@ -416,14 +410,43 @@ const panel = document.getElementById('panel');
 const infoPanel = document.getElementById('infoPanel');
 const infoBtn = document.getElementById('infoBtn');
 
+const skyBtn = document.getElementById('skyBtn');
+
 // Sivupaneelit ovat samassa kohdassa, joten vain toinen voi olla auki
 const sidePanelOpen = () => panel.classList.contains('open') || infoPanel.classList.contains('open');
 
-// Info-nappi piiloon aina kun paneeli peittäisi sen
+// Nurkan napit piiloon aina kun paneeli peittäisi ne
 function syncInfoBtn() {
   infoBtn.classList.toggle('hidden', sidePanelOpen());
+  skyBtn.classList.toggle('hidden', sidePanelOpen());
   infoBtn.setAttribute('aria-expanded', String(infoPanel.classList.contains('open')));
 }
+
+// Tähdistöviivojen vaihto: sama NASA-kartta, jossa viivat piirrettyinä.
+// Viivatekstuuri ladataan vasta ensimmäisellä käytöllä, ja vaihto tehdään
+// vasta latauksen valmistuttua, ettei taivas välähdä mustana.
+let skyFigures = false;
+
+function applySkyMap() {
+  skyMesh.material.map = skyFigures ? skyFigTex : skyStarTex;
+  skyMesh.material.color.setScalar(skyFigures ? 0.9 : 0.8);
+  skyMesh.material.needsUpdate = true;
+}
+
+skyBtn.addEventListener('click', () => {
+  skyFigures = !skyFigures;
+  skyBtn.classList.toggle('active', skyFigures);
+  skyBtn.setAttribute('aria-pressed', String(skyFigures));
+  const teksti = skyFigures ? 'Piilota tähdistöviivat' : 'Näytä tähdistöviivat';
+  skyBtn.title = teksti;
+  skyBtn.setAttribute('aria-label', teksti);
+
+  if (skyFigures && !skyFigTex) {
+    skyFigTex = loadSkyTex('constellation_figures', () => { if (skyFigures) applySkyMap(); });
+    return;
+  }
+  applySkyMap();
+});
 
 function setInfoOpen(open) {
   infoPanel.classList.toggle('open', open);

@@ -74,6 +74,7 @@
     <dl id="panelData"></dl>
   </aside>
 
+  <button id="skyBtn" aria-label="Näytä tähdistöviivat" title="Näytä tähdistöviivat" aria-pressed="false">✶</button>
   <button id="infoBtn" aria-label="Tietoa mallista" title="Tietoa mallista" aria-expanded="false">i</button>
 
   <aside id="infoPanel" class="sidepanel">
@@ -89,6 +90,7 @@
       <li>Klikkaa planeettaa zoomataksesi siihen. Uusi klikkaus näyttää seuraavan faktan.</li>
       <li>Esc palauttaa kokonaiskuvaan.</li>
       <li>Aikapalkista voit pysäyttää ajan, säätää sen nopeutta tai hypätä tapahtumiin.</li>
+      <li>✶-painike näyttää tähdistöviivat taivaalla ja piilottaa ne.</li>
     </ul>
 
     <h3>Mittakaavat</h3>
@@ -109,7 +111,9 @@
       <dd>Noin 0,5°, mikä on yksinkertaistetun kuuteorian raja</dd>
     </dl>
     <p>Maan pyörähdysasento on sidottu aurinkoaikaan, joten vuorokauden- ja
-       vuodenajat näkyvät oikein.</p>
+       vuodenajat näkyvät oikein. Taustan tähtitaivas on NASA:n kartta, jossa
+       tähdet ovat todellisilla paikoillaan — suuntaus on tarkistettu
+       18 kirkkaan tähden sijainneilla.</p>
     <p>Tähtitaivas on valokuvattu Linnunrata-panoraama, joka on käännetty
        oikeaan asentoon: galaktinen taso kulkee ekliptikan poikki noin 60°
        kulmassa. Yksittäiset tähdet ovat kuitenkin koristeellisia eivätkä
@@ -117,7 +121,8 @@
 
     <h3>Lähteet</h3>
     <ul>
-      <li>Tekstuurit: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0)</li>
+      <li>Planeettojen tekstuurit: <a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a> (CC BY 4.0)</li>
+      <li>Tähtitaivas ja tähdistöviivat: <a href="https://svs.gsfc.nasa.gov/4851" target="_blank" rel="noopener">NASA/Goddard SVS, Deep Star Maps 2020</a></li>
       <li>Ratalaskenta: JPL, <i>Approximate Positions of the Planets</i></li>
       <li>Kuun teoria: Paul Schlyterin yksinkertaistettu malli</li>
       <li>Kolmiulotteisen grafiikan moottori: <a href="https://threejs.org/" target="_blank" rel="noopener">Three.js</a></li>

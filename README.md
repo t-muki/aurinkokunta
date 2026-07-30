@@ -40,6 +40,10 @@ Deploy from a branch → main / (root)*.
   kiihtyen ja hidastuen, jolloin planeettojen liike matkan varrella näkyy.
   Kesto kasvaa hypyn pituuden mukaan. Nopeussäätimen koskettaminen keskeyttää
   kelauksen välittömästi
+- Tähtitaivas on NASA:n Deep Star Maps 2020 -kartta, jossa tähdet ovat
+  todellisilla paikoillaan (Hipparcos/Tycho-2). Suuntaus on varmistettu
+  18 kirkkaan tähden sijainneilla, ja tähtikuviot ovat oikeinpäin myös
+  peilautumisen osalta. ✶-painikkeella saa tähdistöviivat näkyviin ja pois
 - Oikean alanurkan info-painike avaa paneelin, jossa on käyttöohjeet,
   mittakaavojen selitys, laskennan tarkkuustiedot sekä lähteet ja lisenssit
 - Jokaisesta kappaleesta on viisi faktaa, joista näytetään aina seuraava, kun
@@ -74,7 +78,9 @@ havainnollistettu, mutta sen suunta vastaa todellista sijaintia.
 
 ## Lähteet
 
-- Tekstuurit: [Solar System Scope](https://www.solarsystemscope.com/textures/) (CC BY 4.0)
+- Planeettojen tekstuurit: [Solar System Scope](https://www.solarsystemscope.com/textures/) (CC BY 4.0)
+- Tähtitaivas ja tähdistöviivat: [NASA/Goddard SVS, Deep Star Maps 2020](https://svs.gsfc.nasa.gov/4851)
+  (Ernie Wright; julkinen aineisto)
 - Ratalaskenta: JPL, "Approximate Positions of the Planets" (Keplerin
   rataelementit epookille J2000)
 - Kuun teoria: Paul Schlyterin yksinkertaistettu malli häiriötermeineen

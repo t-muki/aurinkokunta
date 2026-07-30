@@ -263,11 +263,11 @@ html, body {
   margin-top: 2px;
 }
 
-/* Info-nappi oikeassa alanurkassa */
-#infoBtn {
+/* Oikean alanurkan pyöreät napit: tähdistöviivat ja tietoa mallista */
+#infoBtn,
+#skyBtn {
   position: fixed;
   right: 20px;
-  bottom: 20px;
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -277,16 +277,30 @@ html, body {
   border: 1px solid rgba(255, 184, 77, 0.9);
   backdrop-filter: blur(8px);
   color: #ffeac0;
-  font-family: Georgia, serif;
-  font-style: italic;
-  font-size: 18px;
   line-height: 1;
   cursor: pointer;
   transition: background 0.15s, opacity 0.25s;
 }
-#infoBtn:hover { background: rgba(255, 184, 77, 0.55); }
-/* Nappi pois näkyvistä, kun jompikumpi sivupaneeli peittäisi sen */
-#infoBtn.hidden {
+#infoBtn {
+  bottom: 20px;
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 18px;
+}
+#skyBtn {
+  bottom: 62px;
+  font-size: 15px;
+}
+#infoBtn:hover,
+#skyBtn:hover { background: rgba(255, 184, 77, 0.55); }
+/* Tähdistöviivat näkyvissä: nappi selvästi "pohjassa" */
+#skyBtn.active {
+  background: rgba(255, 184, 77, 0.8);
+  color: #241703;
+}
+/* Napit pois näkyvistä, kun jompikumpi sivupaneeli peittäisi ne */
+#infoBtn.hidden,
+#skyBtn.hidden {
   opacity: 0;
   pointer-events: none;
 }

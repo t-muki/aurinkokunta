@@ -92,6 +92,19 @@ function loadTex(file) {
   return t;
 }
 
+// Suunta taivaalla (rektaskensio, deklinaatio) näkymän akseleiksi.
+// Ekvatoriaalinen → ekliptika → näkymän akselit, sama kierto kuin toScene.
+const OBLIQUITY = 23.4392911 * DEG;
+function equatorialToScene(raDeg, decDeg) {
+  const ra = raDeg * DEG, dec = decDeg * DEG;
+  const x = Math.cos(dec) * Math.cos(ra);
+  const y = Math.cos(dec) * Math.sin(ra);
+  const z = Math.sin(dec);
+  const ey = y * Math.cos(OBLIQUITY) + z * Math.sin(OBLIQUITY);
+  const ez = -y * Math.sin(OBLIQUITY) + z * Math.cos(OBLIQUITY);
+  return new THREE.Vector3(x, ez, -ey);
+}
+
 // Tähtitaivas. Tekstuuri venytetään koko taivaalle, joten se tarvitsee
 // selvästi planeettoja suuremman tarkkuuden. Vanhemmilla laitteilla, jotka
 // eivät tue 4096 pikselin tekstuureja, käytetään pienempää versiota.
@@ -104,6 +117,19 @@ function loadTex(file) {
     new THREE.MeshBasicMaterial({ map: starTex, side: THREE.BackSide })
   );
   sky.material.color.setScalar(0.55); // himmennetään taustaa hieman
+
+  // Tekstuuri on galaktisissa koordinaateissa: Linnunrata kulkee kuvan
+  // vaakasuoraa keskiviivaa pitkin ja galaksin keskus on kuvan keskellä.
+  // Pallon oma akselisto on siis galaktinen, ja se on käännettävä ekliptikaan.
+  // Muuten tähdet osuisivat n. 60° väärään paikkaan.
+  const galPole = equatorialToScene(192.85948, 27.12825);    // pohjoinen galaktinen napa
+  const galCenter = equatorialToScene(266.40510, -28.93617); // galaksin keskus (l=0, b=0)
+  const ux = galCenter.clone().normalize();
+  const uy = galPole.clone().normalize();
+  ux.addScaledVector(uy, -ux.dot(uy)).normalize(); // varmistetaan kohtisuoruus
+  const uz = new THREE.Vector3().crossVectors(ux, uy);
+  sky.setRotationFromMatrix(new THREE.Matrix4().makeBasis(ux, uy, uz));
+
   scene.add(sky);
 }
 

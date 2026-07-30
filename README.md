@@ -30,6 +30,9 @@ Deploy from a branch → main / (root)*.
 
 - Planeettojen reaaliaikaiset sijainnit (JPL:n rataelementit, tarkkuus riittää
   visualisointiin vuosina 1800–2050)
+- Kolme valittavaa mittakaavaa: havainnollinen, oikeat kokosuhteet ja täysi
+  1:1-mittakaava, jossa myös kiertoradat ovat oikeassa suhteessa kappaleisiin.
+  Ks. [Mittakaavat](#mittakaavat)
 - Kuu Maan kiertolaisena, sijainti laskettuna häiriötermeineen (tarkistettu
   tunnettuja uuden- ja täydenkuun hetkiä vasten)
 - Vapaa pyöritys, lähennys ja panorointi hiirellä (OrbitControls)
@@ -71,10 +74,54 @@ Deploy from a branch → main / (root)*.
 
 ## Mittakaavat
 
-Koot ja etäisyydet on puristettu potenssifunktiolla (säde ∝ r^0.6,
-etäisyys ∝ AU^0.55), jotta kokoerot säilyvät havainnollisina mutta kaikki
-mahtuu samaan näkymään. Aurinko ei ole mittakaavassa. Kuun etäisyys Maasta on
-havainnollistettu, mutta sen suunta vastaa todellista sijaintia.
+Aikapalkin valinnasta voi vaihtaa kolmen mittakaavan välillä ilman sivun
+uudelleenlatausta. Kappaleiden suunnat ja ratojen muodot ovat kaikissa samat;
+vain koot ja etäisyydet muuttuvat.
+
+| | Havainnollinen | Oikeat kokosuhteet | Täysi mittakaava |
+| --- | --- | --- | --- |
+| Säde | ∝ r^0,6 | ∝ r (oikea) | ∝ r (oikea) |
+| Etäisyys | ∝ AU^0,55 | ∝ AU^0,55 | ∝ AU (oikea) |
+| Aurinko mittakaavassa | ei | kyllä | kyllä |
+| Kuun etäisyys Maasta | 3,2 Maan sädettä | 12,8 | 60,3 (oikea) |
+| Yksikkö | mielivaltainen | mielivaltainen | Maan säde (6371 km) |
+
+Yksikköpalloista ja skaalauksesta johtuen tilan vaihto ei rakenna geometriaa
+uudelleen: päivitetään vain skaalaukset, nimilappujen sijainnit ja ratapisteet.
+
+*Havainnollinen* on oletus, ja se vastaa mallin aiempaa ainoaa mittakaavaa.
+
+*Oikeat kokosuhteet* on ainoa tila, jossa kokoerot näkyvät samassa kuvassa.
+Kerroin on valittu niin, että Aurinko (10,9 yksikköä) mahtuu selvästi
+Merkuriuksen perihelin (17,8) sisään. Kokonaiskuvassa Aurinko on n. 110 px,
+Jupiter 8 px ja Maa 1 px.
+
+*Täysi mittakaava* on 1:1 sekä koossa että etäisyydessä. Kokonaiskuvassa jopa
+Aurinko on 0,35 px ja planeetat tuhannesosia pikselistä — mitattu arvo, ei
+arvio. Tila on silti käyttökelpoinen, koska nimilaput ovat DOM-elementtejä ja
+pysyvät luettavina sekä klikattavina, ja klikkaus lähentää kappaleeseen. Vasta
+täällä Kuu on oikealla etäisyydellään ja Aurinko näkyy Maasta oikean
+kokoisena (0,53°).
+
+### Toteutuksen reunaehdot
+
+- **Logaritminen syvyyspuskuri** (`logarithmicDepthBuffer`) on pakollinen:
+  täysi mittakaava tarvitsee yhtä aikaa lähitason 0,006 ja kaukotason
+  2,5 · 10⁶ yksikköä.
+- **Lähitaso lasketaan katse-etäisyydestä** joka kehyksessä
+  (`katse-etäisyys · 10⁻³`, vähintään 0,005). Kiinteä lähitaso ei voi palvella
+  yhtä aikaa Kuun pintaa ja Neptunuksen rataa.
+- **Taivaspallo seuraa kameraa** eikä osallistu syvyyspuskuriin
+  (`depthTest: false`, `renderOrder = -1`). Kameran mukana liikkuminen poistaa
+  tähtien virheellisen parallaksin — tähdet ovat käytännössä äärettömän
+  kaukana. Syvyyspuskurin ulkopuolelle jättäminen on välttämätöntä, koska
+  kaukotasolla syvyysarvot saturoituvat ja osa pallon kolmioista jäisi
+  piirtymättä.
+- **Tunnettu rajoite:** täydessä mittakaavassa Neptunus on 700 000 yksikön
+  päässä, ja koska three.js välittää matriisit `Float32Array`ina, sen sijainti
+  kvantittuu 0,0625 yksikön (398 km, 1,6 % planeetan säteestä) askeliin. Tämä
+  voi näkyä nykimisenä, jos Neptunusta katsoo läheltä suurella aikanopeudella.
+  Korjaus olisi liukuva origo.
 
 ## Lähteet
 

@@ -34,6 +34,14 @@
       <label for="dateInput">Siirry päivään:</label>
       <input type="datetime-local" id="dateInput">
     </div>
+    <div class="row">
+      <label for="scaleMode">Mittakaava:</label>
+      <select id="scaleMode">
+        <option value="compressed" selected>Havainnollinen</option>
+        <option value="sizes">Oikeat kokosuhteet</option>
+        <option value="real">Täysi mittakaava (1:1)</option>
+      </select>
+    </div>
 
     <div class="section" id="eventsSection">
       <button id="eventsToggle" class="accordion" aria-expanded="false" aria-controls="eventsPanel">
@@ -90,14 +98,31 @@
       <li>Klikkaa planeettaa zoomataksesi siihen. Uusi klikkaus näyttää seuraavan faktan.</li>
       <li>Esc palauttaa kokonaiskuvaan.</li>
       <li>Aikapalkista voit pysäyttää ajan, säätää sen nopeutta tai hypätä tapahtumiin.</li>
+      <li>Mittakaava-valinnasta voit vaihtaa havainnollisen ja todellisen mittakaavan välillä.</li>
       <li>✶-painike näyttää tähdistöviivat taivaalla ja piilottaa ne.</li>
     </ul>
 
     <h3>Mittakaavat</h3>
-    <p>Koot ja etäisyydet on puristettu, jotta kaikki mahtuu samaan kuvaan mutta
-       kokoerot pysyvät havainnollisina. Aurinko ei ole mittakaavassa. Kuun etäisyys
-       Maasta on liioiteltu noin kaksikymmenkertaisesti, mutta sen suunta vastaa
-       todellista.</p>
+    <p>Aikapalkista voi valita kolmesta mittakaavasta. Kappaleiden suunnat ja
+       kiertoradan muodot ovat kaikissa samat — vain koot ja etäisyydet muuttuvat.</p>
+    <dl>
+      <dt>Havainnollinen</dt>
+      <dd>Koot ja etäisyydet puristettu potenssifunktiolla, jotta kaikki mahtuu
+          samaan kuvaan ja näkyy kerralla. Aurinko ei ole mittakaavassa, ja Kuu
+          on Maan lähellä noin yhdeksästoistaosalla todellisesta etäisyydestään.</dd>
+      <dt>Oikeat kokosuhteet</dt>
+      <dd>Aurinko ja planeetat ovat keskenään oikeassa suhteessa, etäisyydet
+          edelleen puristettuina. Tämä on ainoa tila, jossa kokoerot näkyvät
+          samassa kuvassa: Aurinko on halkaisijaltaan 109 Maata ja Jupiterkin
+          vain kymmenesosa Auringosta.</dd>
+      <dt>Täysi mittakaava (1:1)</dt>
+      <dd>Koot ja etäisyydet samassa mittakaavassa. Kokonaiskuvassa jopa Aurinko
+          on kolmasosa pikselistä ja planeetat tuhannesosia — aurinkokunta on
+          lähes tyhjä, ja sitä ei voi kiertää. Nimilaput merkitsevät paikat, ja
+          niitä klikkaamalla pääsee lähentymään kappaleeseen. Vasta täällä Kuu
+          on oikealla etäisyydellään (60 Maan sädettä) ja Aurinko näkyy Maasta
+          oikean kokoisena, puolen asteen levyisenä.</dd>
+    </dl>
 
     <h3>Tarkkuus</h3>
     <p>Sijainnit perustuvat JPL:n likimääräisiin rataelementteihin, jotka pätevät
@@ -114,10 +139,6 @@
        vuodenajat näkyvät oikein. Taustan tähtitaivas on NASA:n kartta, jossa
        tähdet ovat todellisilla paikoillaan — suuntaus on tarkistettu
        18 kirkkaan tähden sijainneilla.</p>
-    <p>Tähtitaivas on valokuvattu Linnunrata-panoraama, joka on käännetty
-       oikeaan asentoon: galaktinen taso kulkee ekliptikan poikki noin 60°
-       kulmassa. Yksittäiset tähdet ovat kuitenkin koristeellisia eivätkä
-       vastaa todellisia tähtikuvioita.</p>
 
     <h3>Lähteet</h3>
     <ul>

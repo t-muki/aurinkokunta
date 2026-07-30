@@ -8,18 +8,74 @@ import {
 import { FACTS } from './facts.js';
 
 // ---------------------------------------------------------------------------
-// Mittakaavat: koot ja etäisyydet on puristettu potenssifunktiolla, jotta
-// kaikki mahtuu samaan näkymään mutta kokoerot säilyvät havainnollisina.
+// Mittakaavat. Kolme valittavaa tilaa:
+//
+//   compressed  Havainnollinen: koot ja etäisyydet puristettu potenssi-
+//               funktiolla, jotta kaikki mahtuu kuvaan ja näkyy kerralla.
+//               Aurinko on kokonaan mittakaavan ulkopuolella.
+//   sizes       Kappaleet oikeassa suhteessa toisiinsa, etäisyydet edelleen
+//               puristettuina. Ainoa tila, jossa kokoerot näkyvät samassa
+//               kuvassa; kerroin on valittu niin, että Aurinko mahtuu selvästi
+//               Merkuriuksen radan sisään.
+//   real        Täysi 1:1, yksikkönä Maan säde. Kokonaiskuvassa kappaleet ovat
+//               alle pikselin kokoisia — se on aurinkokunnan todellinen luonne,
+//               ja nimilaput merkitsevät paikat.
 // ---------------------------------------------------------------------------
 const DEG = Math.PI / 180;
-const SIZE_EXP = 0.6;   // säde ∝ (todellinen säde)^0.6
-const DIST_EXP = 0.55;  // etäisyys ∝ AU^0.55
-const DIST_K = 34;
+const SUN_EARTH_RADII = 109.30;    // Auringon säde Maan säteinä
+const AU_EARTH_RADII = 23481.1;    // yksi astronominen yksikkö Maan säteinä
+const MOON_EARTH_RADII = 0.2727;   // Kuun säde Maan säteinä
+const MOON_AU = 384400 / 149597871; // Kuun keskietäisyys astronomisina yksikköinä
 
-const scaleRadius = (earthRadii) => 1.6 * Math.pow(earthRadii, SIZE_EXP);
-const scaleDist = (au) => DIST_K * Math.pow(au, DIST_EXP);
+// Nimilappujen väli kappaleen pinnasta ilmaistaan Maan säteen monikertana,
+// jotta lappu asettuu samalle suhteelliselle etäisyydelle kaikissa tiloissa.
+const LABEL_GAP = 1.375;
+const SUN_LABEL_GAP = 1.875;
+const MOON_LABEL_GAP = 0.875;
 
-const SUN_RADIUS = 7; // ei mittakaavassa, kuten sovittu
+const SCALES = {
+  compressed: {
+    radius: (er) => 1.6 * Math.pow(er, 0.6),
+    dist: (au) => 34 * Math.pow(au, 0.55),
+    sunRadius: 7,        // ei mittakaavassa
+    moonDist: 1.6 * 3.2, // havainnollistettu, ei laskettu radan mukaan
+    far: 4000,
+    minDistance: 0.3,
+    maxDistance: 1500,
+    zoomSpeed: 1,
+    glow: 5,
+  },
+  sizes: {
+    radius: (er) => 0.1 * er,
+    dist: (au) => 34 * Math.pow(au, 0.55),
+    sunRadius: 0.1 * SUN_EARTH_RADII,
+    moonDist: null, // sama puristus kuin muilla etäisyyksillä
+    far: 4000,
+    minDistance: 0.3,
+    maxDistance: 1500,
+    zoomSpeed: 1,
+    glow: 2.5,
+  },
+  real: {
+    radius: (er) => er,
+    dist: (au) => AU_EARTH_RADII * au,
+    sunRadius: SUN_EARTH_RADII,
+    moonDist: null,
+    // Kaukotason on katettava suurin mahdollinen etäisyys kamerasta
+    // kappaleeseen: maxDistance + Neptunuksen radan halkaisija.
+    far: 2.5e6,
+    minDistance: 0.3,
+    maxDistance: 1.2e6,
+    zoomSpeed: 2,
+    glow: 2.5,
+  },
+};
+
+let scale = SCALES.compressed;
+const scaleRadius = (earthRadii) => scale.radius(earthRadii);
+const scaleDist = (au) => scale.dist(au);
+// Kuun etäisyys: puristetuissa tiloissa oma arvo, muuten radan mukainen
+const moonDistance = () => scale.moonDist ?? scale.dist(MOON_AU);
 
 const PLANETS = [
   { key: 'mercury', name: 'Merkurius', earthRadii: 0.383, texture: '2k_mercury.jpg', tilt: 0.03, dayHours: 1407.6,
@@ -62,7 +118,10 @@ camera.position.set(0, 130, 260);
 
 const app = document.getElementById('app');
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+// Logaritminen syvyyspuskuri: täysi mittakaava vaatii yhtä aikaa lähitason
+// 0,005 ja kaukotason 2,5 miljoonaa yksikköä. Tavallisella syvyyspuskurilla
+// tuo suhde tuottaisi pahaa z-taistelua planeettojen pinnoilla.
+const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 app.appendChild(renderer.domElement);
@@ -115,10 +174,19 @@ function loadSkyTex(base, onLoad) {
 
 {
   skyStarTex = loadSkyTex('starmap_2020');
+  // Yksikköpallo, jonka koko asetetaan skaalauksella: mittakaavatilan vaihto
+  // ei silloin vaadi geometrian rakentamista uudelleen.
   skyMesh = new THREE.Mesh(
-    new THREE.SphereGeometry(2000, 64, 32),
-    new THREE.MeshBasicMaterial({ map: skyStarTex, side: THREE.BackSide })
+    new THREE.SphereGeometry(1, 64, 32),
+    // Taivas piirretään ensin eikä se osallistu syvyyspuskuriin. Se on
+    // pelkkä tausta, jonka eteen kaikki muu piirtyy — ja täydessä mitta-
+    // kaavassa kaukotason syvyysarvot saturoituisivat, jolloin osa pallon
+    // kolmioista jäisi piirtymättä.
+    new THREE.MeshBasicMaterial({
+      map: skyStarTex, side: THREE.BackSide, depthTest: false, depthWrite: false,
+    })
   );
+  skyMesh.renderOrder = -1;
   // Kirkkaus on leivottu tekstuuriin gammakäyrällä, joten kerroin on 1.
   skyMesh.material.color.setScalar(1);
   // Kuvan navat ovat taivaannavat. Ekliptikapohjaiseen näkymään pääsee
@@ -130,11 +198,11 @@ function loadSkyTex(base, onLoad) {
 
 // --- Aurinko ---------------------------------------------------------------
 const sunMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(SUN_RADIUS, 48, 32),
+  new THREE.SphereGeometry(1, 48, 32),
   new THREE.MeshBasicMaterial({ map: loadTex('2k_sun.jpg') })
 );
 sunMesh.userData = {
-  name: 'Aurinko', info: SUN_INFO, viewRadius: SUN_RADIUS,
+  name: 'Aurinko', info: SUN_INFO, viewRadius: scale.sunRadius,
   facts: FACTS.sun, factIndex: 0,
 };
 scene.add(sunMesh);
@@ -142,7 +210,6 @@ scene.add(sunMesh);
 const sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({
   map: makeGlowTexture(), color: 0xffcc66, transparent: true, opacity: 0.55, depthWrite: false,
 }));
-sunGlow.scale.setScalar(SUN_RADIUS * 5);
 scene.add(sunGlow);
 
 function makeGlowTexture() {
@@ -184,11 +251,14 @@ for (const def of PLANETS) {
   }
   group.add(spinAxis);
 
+  // Yksikköpallo, jonka koko tulee skaalauksesta: mittakaavatilaa voi vaihtaa
+  // päivittämällä pelkän skaalauksen. Tasainen skaalaus ei riko normaaleja.
   const radius = scaleRadius(def.earthRadii);
   const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(radius, 48, 32),
+    new THREE.SphereGeometry(1, 48, 32),
     new THREE.MeshStandardMaterial({ map: loadTex(def.texture), roughness: 1, metalness: 0 })
   );
+  mesh.scale.setScalar(radius);
   // viewRadius = mitä kameran pitää mahduttaa kuvaan (renkaat mukaan lukien)
   mesh.userData = {
     name: def.name, info: def.info, body: def.key,
@@ -198,8 +268,10 @@ for (const def of PLANETS) {
   spinAxis.add(mesh);
   pickables.push(mesh);
 
+  let ring = null;
   if (def.ring) {
-    const inner = radius * 1.25, outer = radius * 2.3;
+    // Rengas rakennetaan samoin yksikkömitoissa ja skaalataan planeetan koolla
+    const inner = 1.25, outer = 2.3;
     const geo = new THREE.RingGeometry(inner, outer, 128);
     // Renkaan tekstuuri on säteittäinen kaistale: u = etäisyys renkaan poikki
     const pos = geo.attributes.position, uv = geo.attributes.uv;
@@ -210,63 +282,83 @@ for (const def of PLANETS) {
     }
     const ringTex = texLoader.load('textures/2k_saturn_ring_alpha.png');
     ringTex.colorSpace = THREE.SRGBColorSpace;
-    const ring = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+    ring = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
       map: ringTex, transparent: true, side: THREE.DoubleSide, depthWrite: false,
     }));
     ring.rotation.x = -Math.PI / 2;
+    ring.scale.setScalar(radius);
     spinAxis.add(ring);
   }
 
   const label = makeLabel(def.name, '', () => selectBody(mesh));
-  label.position.set(0, radius + 2.2, 0);
+  label.position.set(0, radius + scaleRadius(1) * LABEL_GAP, 0);
   group.add(label);
 
-  // Kiertorata
-  const pts = orbitPath(def.key, jdNow, 360).map((p) => toScene(p, new THREE.Vector3()));
+  // Kiertorata. Pisteet pidetään astronomisina yksikköinä, jotta mittakaavan
+  // vaihdossa riittää kirjoittaa geometrian pisteet uudelleen.
+  const orbitAu = orbitPath(def.key, jdNow, 360);
   const orbit = new THREE.Line(
-    new THREE.BufferGeometry().setFromPoints(pts),
+    new THREE.BufferGeometry().setFromPoints(
+      orbitAu.map((p) => toScene(p, new THREE.Vector3()))
+    ),
     new THREE.LineBasicMaterial({ color: 0x8899bb, transparent: true, opacity: 0.35 })
   );
   scene.add(orbit);
 
   scene.add(group);
-  bodies.push({ def, group, mesh, spinAxis });
+  bodies.push({ def, group, mesh, spinAxis, label, ring, orbit, orbitAu });
 }
 
+// Lappu liitetään näkymään eikä Aurinkoon, koska Auringon mesh on skaalattu
+// yksikköpallo: lapun sijainti halutaan ilmaista maailman yksiköissä.
+// Aurinko pysyy origossa, joten kiinteä sijainti riittää.
 const sunLabel = makeLabel('Aurinko', 'sun', () => selectBody(sunMesh));
-sunLabel.position.set(0, SUN_RADIUS + 3, 0);
-sunMesh.add(sunLabel);
+scene.add(sunLabel);
 
 // --- Kuu -------------------------------------------------------------------
 const earthBody = bodies.find((b) => b.def.key === 'earth');
-const earthRadius = scaleRadius(1);
-const MOON_DIST = earthRadius * 3.2;
+// Sijainti on ryhmässä ja koko meshissä, kuten planeetoilla: näin nimilappu
+// voi olla skaalaamattomassa ryhmässä ja mesh pyörii sidotusti.
+const moonGroup = new THREE.Group();
 const moonMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(scaleRadius(0.2727), 32, 20),
+  new THREE.SphereGeometry(1, 32, 20),
   new THREE.MeshStandardMaterial({ map: loadTex('2k_moon.jpg'), roughness: 1 })
 );
+moonMesh.scale.setScalar(scaleRadius(MOON_EARTH_RADII));
 moonMesh.userData = {
-  name: 'Kuu', info: MOON_INFO, viewRadius: scaleRadius(0.2727),
+  name: 'Kuu', info: MOON_INFO, viewRadius: scaleRadius(MOON_EARTH_RADII),
   facts: FACTS.moon, factIndex: 0,
 };
-earthBody.group.add(moonMesh);
+moonGroup.add(moonMesh);
+earthBody.group.add(moonGroup);
 pickables.push(moonMesh);
 
 const moonLabel = makeLabel('Kuu', 'moon', () => selectBody(moonMesh));
-moonLabel.position.set(0, scaleRadius(0.2727) + 1.4, 0);
-moonMesh.add(moonLabel);
+moonLabel.position.set(0, scaleRadius(MOON_EARTH_RADII) + scaleRadius(1) * MOON_LABEL_GAP, 0);
+moonGroup.add(moonLabel);
 
-{ // Kuun radan viiva Maan ympärille
-  const pts = [];
+// Kuun radan viiva Maan ympärille. Pisteet kirjoitetaan uudelleen, kun
+// mittakaava vaihtuu, joten geometria pidetään tallessa.
+const moonOrbit = new THREE.Line(
+  new THREE.BufferGeometry().setAttribute(
+    'position', new THREE.BufferAttribute(new Float32Array(91 * 3), 3)
+  ),
+  new THREE.LineBasicMaterial({ color: 0x8899bb, transparent: true, opacity: 0.25 })
+);
+earthBody.group.add(moonOrbit);
+
+function setMoonOrbitPoints(dist) {
+  const arr = moonOrbit.geometry.attributes.position.array;
   for (let i = 0; i <= 90; i++) {
     const a = (i / 90) * 2 * Math.PI;
-    pts.push(new THREE.Vector3(Math.cos(a) * MOON_DIST, 0, Math.sin(a) * MOON_DIST));
+    arr[i * 3] = Math.cos(a) * dist;
+    arr[i * 3 + 1] = 0;
+    arr[i * 3 + 2] = Math.sin(a) * dist;
   }
-  earthBody.group.add(new THREE.Line(
-    new THREE.BufferGeometry().setFromPoints(pts),
-    new THREE.LineBasicMaterial({ color: 0x8899bb, transparent: true, opacity: 0.25 })
-  ));
+  moonOrbit.geometry.attributes.position.needsUpdate = true;
+  moonOrbit.geometry.computeBoundingSphere();
 }
+setMoonOrbitPoints(moonDistance());
 
 // --- Ajan hallinta ---------------------------------------------------------
 const SPEED_STEPS = [
@@ -680,10 +772,11 @@ function animate() {
   // Kuu: todellinen suunta Maasta katsottuna, etäisyys havainnollistettu
   const m = moonGeocentric(jd);
   const lon = m.lon * DEG, lat = m.lat * DEG;
-  moonMesh.position.set(
-    Math.cos(lat) * Math.cos(lon) * MOON_DIST,
-    Math.sin(lat) * MOON_DIST,
-    -Math.cos(lat) * Math.sin(lon) * MOON_DIST
+  const md = moonDistance();
+  moonGroup.position.set(
+    Math.cos(lat) * Math.cos(lon) * md,
+    Math.sin(lat) * md,
+    -Math.cos(lat) * Math.sin(lon) * md
   );
   // Sidottu pyöriminen: sama puoli kohti Maata
   moonMesh.rotation.y = lon + Math.PI;
@@ -708,11 +801,27 @@ function animate() {
     }
   }
 
-  // Auringon hehku himmenee lähietäisyydellä, ettei se peitä pintaa
+  // Auringon hehku himmenee lähietäisyydellä, ettei se peitä pintaa.
+  // Raja suhteutetaan Auringon säteeseen, jotta se toimii kaikissa tiloissa.
   const sunDist = camera.position.distanceTo(sunMesh.position);
-  sunGlow.material.opacity = THREE.MathUtils.clamp((sunDist - SUN_RADIUS * 2) / 100, 0.06, 0.55);
+  sunGlow.material.opacity =
+    THREE.MathUtils.clamp((sunDist / scale.sunRadius - 2) / 14, 0.06, 0.55);
 
   controls.update();
+
+  // Taivaspallo keskitetään kameraan. Tähdet ovat käytännössä äärettömän
+  // kaukana, joten ne eivät saa liikkua katsojan mukana — ja samalla kaukotaso
+  // riippuu vain pallon säteestä eikä kameran etäisyydestä Auringosta.
+  skyMesh.position.copy(camera.position);
+
+  // Lähitaso katse-etäisyydestä: täydessä mittakaavassa sama kiinteä lähitaso
+  // ei voi palvella yhtä aikaa Kuun pintaa ja Neptunuksen rataa.
+  const near = Math.max(0.005, controls.target.distanceTo(camera.position) * 1e-3);
+  if (camera.near !== near || camera.far !== scale.far) {
+    camera.near = near;
+    camera.far = scale.far;
+    camera.updateProjectionMatrix();
+  }
 
   // update() on juuri toteuttanut mahdollisen panoroinnin siirtämällä
   // katsepistettä. Otetaan siirtymä talteen, jotta seuranta ei kumoa sitä.
@@ -720,6 +829,70 @@ function animate() {
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 }
+
+// --- Mittakaavatilan vaihto ------------------------------------------------
+// Geometriat ovat yksikkömitoissa, joten tilan vaihto on pelkkää skaalausten,
+// nimilappujen ja ratapisteiden päivitystä — mitään ei rakenneta uudelleen.
+const scaleSelect = document.getElementById('scaleMode');
+
+function setOrbitPoints(line, auPts) {
+  const arr = line.geometry.attributes.position.array;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < auPts.length; i++) {
+    toScene(auPts[i], v);
+    arr[i * 3] = v.x;
+    arr[i * 3 + 1] = v.y;
+    arr[i * 3 + 2] = v.z;
+  }
+  line.geometry.attributes.position.needsUpdate = true;
+  // Ilman tätä karsinta käyttäisi vanhaa rajapalloa ja rata voisi kadota
+  line.geometry.computeBoundingSphere();
+}
+
+function applyScale(key) {
+  scale = SCALES[key];
+  const gapRef = scale.radius(1); // Maan säde: nimilappujen välien mittayksikkö
+
+  sunMesh.scale.setScalar(scale.sunRadius);
+  sunMesh.userData.viewRadius = scale.sunRadius;
+  sunLabel.position.set(0, scale.sunRadius + gapRef * SUN_LABEL_GAP, 0);
+  sunGlow.scale.setScalar(scale.sunRadius * scale.glow);
+
+  for (const b of bodies) {
+    const r = scale.radius(b.def.earthRadii);
+    b.mesh.scale.setScalar(r);
+    b.mesh.userData.viewRadius = b.def.ring ? r * 2.4 : r;
+    b.label.position.set(0, r + gapRef * LABEL_GAP, 0);
+    if (b.ring) b.ring.scale.setScalar(r);
+    setOrbitPoints(b.orbit, b.orbitAu);
+  }
+
+  const mr = scale.radius(MOON_EARTH_RADII);
+  moonMesh.scale.setScalar(mr);
+  moonMesh.userData.viewRadius = mr;
+  moonLabel.position.set(0, mr + gapRef * MOON_LABEL_GAP, 0);
+  setMoonOrbitPoints(moonDistance());
+
+  // Taivas seuraa kameraa eikä osallistu syvyyspuskuriin, joten säteen tarvitsee
+  // vain mahtua leikkaustasojen väliin — se ei voi peittää mitään.
+  skyMesh.scale.setScalar(scale.far * 0.5);
+  controls.minDistance = scale.minDistance;
+  controls.maxDistance = scale.maxDistance;
+  controls.zoomSpeed = scale.zoomSpeed;
+
+  // Kamera asetetaan suoraan eikä animoiden: mittakaava muuttuu useita
+  // kertaluokkia, ja liuku näyttäisi hallitsemattomalta ryntäykseltä.
+  // Kohdistettu kappale pysyy keskellä, vain sen koko muuttuu.
+  panOffset.set(0, 0, 0);
+  camAnim = null;
+  computeGoal(false);
+  controls.target.copy(goalTarget);
+  camera.position.copy(goalPos);
+}
+
+scaleSelect.addEventListener('change', () => applyScale(scaleSelect.value));
+applyScale(scaleSelect.value);
+
 animate();
 
 addEventListener('resize', () => {

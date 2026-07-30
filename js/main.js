@@ -119,7 +119,8 @@ function loadSkyTex(base, onLoad) {
     new THREE.SphereGeometry(2000, 64, 32),
     new THREE.MeshBasicMaterial({ map: skyStarTex, side: THREE.BackSide })
   );
-  skyMesh.material.color.setScalar(0.8);
+  // Kirkkaus on leivottu tekstuuriin gammakäyrällä, joten kerroin on 1.
+  skyMesh.material.color.setScalar(1);
   // Kuvan navat ovat taivaannavat. Ekliptikapohjaiseen näkymään pääsee
   // kallistamalla palloa akselikallistuksen verran — sama kallistus,
   // joka Maan akselille annetaan.
@@ -429,7 +430,6 @@ let skyFigures = false;
 
 function applySkyMap() {
   skyMesh.material.map = skyFigures ? skyFigTex : skyStarTex;
-  skyMesh.material.color.setScalar(skyFigures ? 0.9 : 0.8);
   skyMesh.material.needsUpdate = true;
 }
 

@@ -117,6 +117,17 @@ kokoisena (0,53°).
   kaukana. Syvyyspuskurin ulkopuolelle jättäminen on välttämätöntä, koska
   kaukotasolla syvyysarvot saturoituvat ja osa pallon kolmioista jäisi
   piirtymättä.
+- **Ratojen tarkkuus skaalautuu mittakaavan mukaan.** Murtoviivan jänne
+  oikaisee kaarta noin `R·π²/(2N²)`. Täydessä mittakaavassa radan ja kappaleen
+  kokojen suhde on jopa 180 000-kertainen, joten kiinteä 360 jakoa jättäisi
+  viivan Maan radalla 0,9 Maan sädettä sisäpuolelle — planeetan reunaan.
+  Jakojen määrä lasketaan planeettakohtaisesti (1 658–6 719) niin, että
+  oikaisu jää kahteen prosenttiin kappaleen säteestä. Mitattu poikkeama on
+  0,004–0,021 sädettä.
+- **Kuun rataviiva lasketaan samasta kuuteoriasta kuin Kuun sijainti.** Rata
+  on 5,15° kallellaan ekliptikaan, joten tasoon piirretty ympyrä jätti Kuun
+  jopa 20 Kuun sädettä sivuun. Viiva päivitetään, kun aika on siirtynyt yli
+  10 vuorokautta, koska nouseva solmu kiertää 18,6 vuodessa.
 - **Tunnettu rajoite:** täydessä mittakaavassa Neptunus on 700 000 yksikön
   päässä, ja koska three.js välittää matriisit `Float32Array`ina, sen sijainti
   kvantittuu 0,0625 yksikön (398 km, 1,6 % planeetan säteestä) askeliin. Tämä

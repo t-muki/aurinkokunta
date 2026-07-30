@@ -78,21 +78,21 @@ const scaleDist = (au) => scale.dist(au);
 const moonDistance = () => scale.moonDist ?? scale.dist(MOON_AU);
 
 const PLANETS = [
-  { key: 'mercury', name: 'Merkurius', earthRadii: 0.383, texture: '2k_mercury.jpg', tilt: 0.03, dayHours: 1407.6,
+  { key: 'mercury', name: 'Merkurius', earthRadii: 0.383, au: 0.3871, texture: '2k_mercury.jpg', tilt: 0.03, dayHours: 1407.6,
     info: { radius: '2 439,7 km', dist: '57,9 milj. km (0,39 AU)', period: '88 vrk', day: '58,6 vrk', moons: '0' } },
-  { key: 'venus', name: 'Venus', earthRadii: 0.949, texture: '2k_venus_surface.jpg', tilt: 177.4, dayHours: -5832.5,
+  { key: 'venus', name: 'Venus', earthRadii: 0.949, au: 0.7233, texture: '2k_venus_surface.jpg', tilt: 177.4, dayHours: -5832.5,
     info: { radius: '6 051,8 km', dist: '108,2 milj. km (0,72 AU)', period: '224,7 vrk', day: '243 vrk (takaperoinen)', moons: '0' } },
-  { key: 'earth', name: 'Maa', earthRadii: 1, texture: '2k_earth_daymap.jpg', tilt: 23.4, dayHours: 23.93,
+  { key: 'earth', name: 'Maa', earthRadii: 1, au: 1.0, texture: '2k_earth_daymap.jpg', tilt: 23.4, dayHours: 23.93,
     info: { radius: '6 371 km', dist: '149,6 milj. km (1,00 AU)', period: '365,25 vrk', day: '23 h 56 min', moons: '1 (Kuu)' } },
-  { key: 'mars', name: 'Mars', earthRadii: 0.532, texture: '2k_mars.jpg', tilt: 25.2, dayHours: 24.62,
+  { key: 'mars', name: 'Mars', earthRadii: 0.532, au: 1.5237, texture: '2k_mars.jpg', tilt: 25.2, dayHours: 24.62,
     info: { radius: '3 389,5 km', dist: '227,9 milj. km (1,52 AU)', period: '687 vrk', day: '24 h 37 min', moons: '2' } },
-  { key: 'jupiter', name: 'Jupiter', earthRadii: 10.97, texture: '2k_jupiter.jpg', tilt: 3.1, dayHours: 9.93,
+  { key: 'jupiter', name: 'Jupiter', earthRadii: 10.97, au: 5.2029, texture: '2k_jupiter.jpg', tilt: 3.1, dayHours: 9.93,
     info: { radius: '69 911 km', dist: '778,5 milj. km (5,20 AU)', period: '11,86 v', day: '9 h 56 min', moons: '95' } },
-  { key: 'saturn', name: 'Saturnus', earthRadii: 9.14, texture: '2k_saturn.jpg', tilt: 26.7, dayHours: 10.55, ring: true,
+  { key: 'saturn', name: 'Saturnus', earthRadii: 9.14, au: 9.5367, texture: '2k_saturn.jpg', tilt: 26.7, dayHours: 10.55, ring: true,
     info: { radius: '58 232 km', dist: '1 433,5 milj. km (9,54 AU)', period: '29,45 v', day: '10 h 33 min', moons: '146' } },
-  { key: 'uranus', name: 'Uranus', earthRadii: 3.98, texture: '2k_uranus.jpg', tilt: 97.8, dayHours: -17.24,
+  { key: 'uranus', name: 'Uranus', earthRadii: 3.98, au: 19.189, texture: '2k_uranus.jpg', tilt: 97.8, dayHours: -17.24,
     info: { radius: '25 362 km', dist: '2 872,5 milj. km (19,2 AU)', period: '84 v', day: '17 h 14 min (takaperoinen)', moons: '28' } },
-  { key: 'neptune', name: 'Neptunus', earthRadii: 3.86, texture: '2k_neptune.jpg', tilt: 28.3, dayHours: 16.11,
+  { key: 'neptune', name: 'Neptunus', earthRadii: 3.86, au: 30.07, texture: '2k_neptune.jpg', tilt: 28.3, dayHours: 16.11,
     info: { radius: '24 622 km', dist: '4 495,1 milj. km (30,1 AU)', period: '164,8 v', day: '16 h 6 min', moons: '16' } },
 ];
 
@@ -102,6 +102,21 @@ const MOON_INFO = {
   radius: '1 737,4 km', distLabel: 'Etäisyys Maasta', dist: '384 400 km',
   period: '27,3 vrk', day: '27,3 vrk (sidottu pyöriminen)', moons: '—',
 };
+
+// Kiertoradat piirretään murtoviivana, jonka jänne oikaisee kaarta
+// s ≈ R·π²/(2N²). Täydessä mittakaavassa radan ja kappaleen kokojen suhde on
+// jopa 180 000-kertainen, joten kiinteä 360 jakoa jättäisi viivan Maan radalla
+// 0,9 Maan sädettä sisäpuolelle — eli planeetan reunaan. Jakojen määrä
+// valitaan niin, että oikaisu jää kahteen prosenttiin kappaleen säteestä.
+const ORBIT_TOLERANCE = 0.02;
+// Vaalea sävy erottuu myös Linnunradan kirkkaita kohtia vasten, joita vasten
+// tummempi viiva hukkui. Läpinäkyvyys pitää sen silti hillittynä mustaa vasten.
+const ORBIT_COLOR = 0xa8b8d8;
+
+function orbitSegments(def) {
+  const ratio = (def.au * AU_EARTH_RADII) / (ORBIT_TOLERANCE * def.earthRadii);
+  return Math.min(8192, Math.max(360, Math.ceil(Math.PI * Math.sqrt(ratio / 2))));
+}
 
 // Ekliptikakoordinaatit (AU) → näkymän koordinaatit
 function toScene(p, out) {
@@ -296,12 +311,12 @@ for (const def of PLANETS) {
 
   // Kiertorata. Pisteet pidetään astronomisina yksikköinä, jotta mittakaavan
   // vaihdossa riittää kirjoittaa geometrian pisteet uudelleen.
-  const orbitAu = orbitPath(def.key, jdNow, 360);
+  const orbitAu = orbitPath(def.key, jdNow, orbitSegments(def));
   const orbit = new THREE.Line(
     new THREE.BufferGeometry().setFromPoints(
       orbitAu.map((p) => toScene(p, new THREE.Vector3()))
     ),
-    new THREE.LineBasicMaterial({ color: 0x8899bb, transparent: true, opacity: 0.35 })
+    new THREE.LineBasicMaterial({ color: ORBIT_COLOR, transparent: true, opacity: 0.45 })
   );
   scene.add(orbit);
 
@@ -337,28 +352,38 @@ const moonLabel = makeLabel('Kuu', 'moon', () => selectBody(moonMesh));
 moonLabel.position.set(0, scaleRadius(MOON_EARTH_RADII) + scaleRadius(1) * MOON_LABEL_GAP, 0);
 moonGroup.add(moonLabel);
 
-// Kuun radan viiva Maan ympärille. Pisteet kirjoitetaan uudelleen, kun
-// mittakaava vaihtuu, joten geometria pidetään tallessa.
+// Kuun rataviiva. Rata on 5,15° kallellaan ekliptikaan, joten tasoon piirretty
+// ympyrä jättäisi Kuun jopa 20 Kuun sädettä viivan sivuun — havainnollisessa
+// mittakaavassa poikkeama peittyi kappaleen kokoon, täydessä ei. Viiva
+// lasketaan samasta kuuteoriasta kuin Kuun sijainti, joten Kuu on sillä.
+const MOON_ORBIT_SEGMENTS = 720;
+const SIDEREAL_MONTH = 27.32166;
 const moonOrbit = new THREE.Line(
   new THREE.BufferGeometry().setAttribute(
-    'position', new THREE.BufferAttribute(new Float32Array(91 * 3), 3)
+    'position', new THREE.BufferAttribute(new Float32Array((MOON_ORBIT_SEGMENTS + 1) * 3), 3)
   ),
-  new THREE.LineBasicMaterial({ color: 0x8899bb, transparent: true, opacity: 0.25 })
+  new THREE.LineBasicMaterial({ color: ORBIT_COLOR, transparent: true, opacity: 0.35 })
 );
 earthBody.group.add(moonOrbit);
 
-function setMoonOrbitPoints(dist) {
+// Rata lasketaan yhden sideerisen kuukauden yli annetun hetken ympärille.
+let moonPathEpoch = 0;
+function setMoonOrbitPoints(epochJd) {
+  moonPathEpoch = epochJd;
+  const dist = moonDistance();
   const arr = moonOrbit.geometry.attributes.position.array;
-  for (let i = 0; i <= 90; i++) {
-    const a = (i / 90) * 2 * Math.PI;
-    arr[i * 3] = Math.cos(a) * dist;
-    arr[i * 3 + 1] = 0;
-    arr[i * 3 + 2] = Math.sin(a) * dist;
+  for (let i = 0; i <= MOON_ORBIT_SEGMENTS; i++) {
+    const jd = epochJd + (i / MOON_ORBIT_SEGMENTS - 0.5) * SIDEREAL_MONTH;
+    const g = moonGeocentric(jd);
+    const lon = g.lon * DEG, lat = g.lat * DEG;
+    arr[i * 3] = Math.cos(lat) * Math.cos(lon) * dist;
+    arr[i * 3 + 1] = Math.sin(lat) * dist;
+    arr[i * 3 + 2] = -Math.cos(lat) * Math.sin(lon) * dist;
   }
   moonOrbit.geometry.attributes.position.needsUpdate = true;
   moonOrbit.geometry.computeBoundingSphere();
 }
-setMoonOrbitPoints(moonDistance());
+setMoonOrbitPoints(jdNow);
 
 // --- Ajan hallinta ---------------------------------------------------------
 const SPEED_STEPS = [
@@ -769,6 +794,10 @@ function animate() {
   }
   sunMesh.rotation.y = (simTime / 3600000 / 609.12) * 2 * Math.PI;
 
+  // Kuun nouseva solmu kiertää 18,6 vuodessa, joten rataviiva vanhenee ajan
+  // siirtyessä. Päivitetään, kun ollaan lähellä näytevälin reunoja.
+  if (Math.abs(jd - moonPathEpoch) > 10) setMoonOrbitPoints(jd);
+
   // Kuu: todellinen suunta Maasta katsottuna, etäisyys havainnollistettu
   const m = moonGeocentric(jd);
   const lon = m.lon * DEG, lat = m.lat * DEG;
@@ -871,7 +900,7 @@ function applyScale(key) {
   moonMesh.scale.setScalar(mr);
   moonMesh.userData.viewRadius = mr;
   moonLabel.position.set(0, mr + gapRef * MOON_LABEL_GAP, 0);
-  setMoonOrbitPoints(moonDistance());
+  setMoonOrbitPoints(moonPathEpoch);
 
   // Taivas seuraa kameraa eikä osallistu syvyyspuskuriin, joten säteen tarvitsee
   // vain mahtua leikkaustasojen väliin — se ei voi peittää mitään.

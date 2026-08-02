@@ -159,7 +159,22 @@ scene.add(new THREE.AmbientLight(0xffffff, 0.18));
 const sunLight = new THREE.PointLight(0xfff2d8, 2.6, 0, 0);
 scene.add(sunLight);
 
+// ---------------------------------------------------------------------------
+// Piirto tehdään vain kun kuva oikeasti muuttuu. Reaaliajassa näkymä on
+// käytännössä liikkumaton — nopeimmalla kappaleella kuluu tunteja yhden
+// pikselin siirtymiseen — joten saman kuvan piirtäminen sata kertaa sekunnissa
+// on pelkkää lämpöä. Tämä lippu nostetaan aina kun jokin muu kuin kameran oma
+// liike muuttaa kuvaa; kameran liike havaitaan silmukassa erikseen.
+// ---------------------------------------------------------------------------
+let dirty = true;
+const markDirty = () => { dirty = true; };
+
 const texLoader = new THREE.TextureLoader();
+// Tekstuurit saapuvat verkosta silmukan ulkopuolella, joten niiden
+// valmistuminen on pyydettävä piirtämään erikseen.
+THREE.DefaultLoadingManager.onProgress = markDirty;
+THREE.DefaultLoadingManager.onLoad = markDirty;
+
 function loadTex(file) {
   const t = texLoader.load('textures/' + file);
   t.colorSpace = THREE.SRGBColorSpace;
@@ -548,6 +563,7 @@ let skyFigures = false;
 function applySkyMap() {
   skyMesh.material.map = skyFigures ? skyFigTex : skyStarTex;
   skyMesh.material.needsUpdate = true;
+  markDirty();
 }
 
 skyBtn.addEventListener('click', () => {
@@ -569,6 +585,7 @@ function setInfoOpen(open) {
   infoPanel.classList.toggle('open', open);
   if (open) panel.classList.remove('open');
   syncInfoBtn();
+  markDirty(); // paneeli vaikuttaa rajaukseen computeGoalin kautta
 }
 infoBtn.addEventListener('click', () => setInfoOpen(!infoPanel.classList.contains('open')));
 document.getElementById('infoClose').addEventListener('click', () => setInfoOpen(false));
@@ -615,6 +632,7 @@ function startCamAnim(dur = 1100) {
     fromPos: camera.position.clone(),
     fromTarget: controls.target.clone(),
   };
+  markDirty();
 }
 
 // Painike himmenee, kun sen näkymä on jo valittuna
@@ -735,6 +753,30 @@ function computeGoal(useCurrentDistance) {
   goalPos.copy(goalTarget).addScaledVector(camDir.normalize(), dist);
 }
 
+let lastClockSecond = null;
+
+// Edellisen piirron hetki ja kameran asento, joihin verrataan.
+let lastRenderTime = 0;
+const lastRenderPos = new THREE.Vector3();
+const lastRenderQuat = new THREE.Quaternion();
+// Kuinka paljon kuvan on muututtava, jotta piirto kannattaa (ruutupikseleinä)
+const RENDER_PX_THRESHOLD = 0.3;
+// Enimmäisväli piirtojen välillä. Toimii turvaverkkona: vaikka jokin
+// herätesignaali jäisi huomaamatta, kuva korjautuu neljännessekunnissa.
+const IDLE_RENDER_INTERVAL = 250;
+
+// Onko kamera liikkunut sen verran, että kuva näkyvästi muuttuisi? Kynnys on
+// ruutupikseleissä eikä maailman yksiköissä, koska mittakaavatilojen yksiköt
+// eroavat kuusi kertaluokkaa. Kohteen seurannassa kamera ja kappale liikkuvat
+// yhdessä, jolloin ruutusiirtymä jää alle kynnyksen eikä turhaa piirtoa tule.
+function cameraMovedVisibly() {
+  const pxPerRad = innerHeight / (2 * Math.tan((camera.fov / 2) * DEG));
+  const dot = Math.min(1, Math.abs(lastRenderQuat.dot(camera.quaternion)));
+  if (2 * Math.acos(dot) * pxPerRad > RENDER_PX_THRESHOLD) return true;
+  const dist = Math.max(1e-9, camera.position.distanceTo(controls.target));
+  return (camera.position.distanceTo(lastRenderPos) / dist) * pxPerRad > RENDER_PX_THRESHOLD;
+}
+
 function animate() {
   requestAnimationFrame(animate);
   const now = performance.now();
@@ -771,7 +813,13 @@ function animate() {
   }
   const simDate = new Date(simTime);
   const jd = jdFromDate(simDate);
-  clockEl.textContent = dateFmt.format(simDate);
+  // Kello näyttää sekunnin tarkkuudella, joten muotoilu ja DOM-kirjoitus
+  // tehdään vain sekunnin vaihtuessa eikä joka kehyksellä.
+  const simSecond = Math.floor(simTime / 1000);
+  if (simSecond !== lastClockSecond) {
+    lastClockSecond = simSecond;
+    clockEl.textContent = dateFmt.format(simDate);
+  }
 
   // Planeettojen sijainnit
   for (const b of bodies) {
@@ -855,8 +903,21 @@ function animate() {
   // update() on juuri toteuttanut mahdollisen panoroinnin siirtämällä
   // katsepistettä. Otetaan siirtymä talteen, jotta seuranta ei kumoa sitä.
   if (focusObj && !camAnim) panOffset.add(tmp.copy(controls.target).sub(goalTarget));
-  renderer.render(scene, camera);
-  labelRenderer.render(scene, camera);
+
+  // Piirretään vain jos kuva muuttuu: kesken animaation tai kelauksen, ajan
+  // ollessa nopeutettu, kameran liikkuessa näkyvästi, tai kun jokin muu on
+  // nostanut lipun. Muuten riittää neljä piirtoa sekunnissa.
+  if (dirty || camAnim || timeAnim ||
+      (!paused && mult !== 1) ||
+      now - lastRenderTime > IDLE_RENDER_INTERVAL ||
+      cameraMovedVisibly()) {
+    renderer.render(scene, camera);
+    labelRenderer.render(scene, camera);
+    dirty = false;
+    lastRenderTime = now;
+    lastRenderPos.copy(camera.position);
+    lastRenderQuat.copy(camera.quaternion);
+  }
 }
 
 // --- Mittakaavatilan vaihto ------------------------------------------------
@@ -917,6 +978,7 @@ function applyScale(key) {
   computeGoal(false);
   controls.target.copy(goalTarget);
   camera.position.copy(goalPos);
+  markDirty();
 }
 
 scaleSelect.addEventListener('change', () => applyScale(scaleSelect.value));
@@ -929,4 +991,5 @@ addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   labelRenderer.setSize(innerWidth, innerHeight);
+  markDirty();
 });

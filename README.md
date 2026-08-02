@@ -103,6 +103,38 @@ pysyvät luettavina sekä klikattavina, ja klikkaus lähentää kappaleeseen. Va
 täällä Kuu on oikealla etäisyydellään ja Aurinko näkyy Maasta oikean
 kokoisena (0,53°).
 
+## Suorituskyky
+
+Kuva piirretään vain kun se muuttuu. Reaaliajassa näkymä on käytännössä
+liikkumaton — mitattuna nopeimman kappaleen siirtymä on 0,001 pikseliä
+kymmenessä sekunnissa, eli yhteen pikseliin kuluisi noin kolme tuntia — joten
+saman kuvan piirtäminen sata kertaa sekunnissa on pelkkää lämpöä.
+
+Piirto tapahtuu, jos jokin pätee: kamera on liikkunut yli 0,3 pikseliä
+ruudulla, kamera-animaatio tai ajan kelaus on kesken, aika on nopeutettu, jokin
+tapahtuma on nostanut lipun (koon muutos, mittakaavan vaihto, tekstuurin
+valmistuminen, taivaskartan vaihto), tai edellisestä piirrosta on yli 250 ms.
+Viimeinen ehto on turvaverkko: vaikka jokin herätesignaali jäisi huomaamatta,
+kuva korjautuu neljännessekunnissa.
+
+Kameran liikkeen kynnys mitataan ruutupikseleinä eikä maailman yksiköinä, koska
+mittakaavatilojen yksiköt eroavat kuusi kertaluokkaa.
+
+Mitattu vaikutus (100 Hz näyttö, 4,2 Mpx kehyksessä):
+
+| | Ennen | Jälkeen |
+| --- | --- | --- |
+| Piirtoja sekunnissa joutilaana | 100 | **4** |
+| GPU-kuorma joutilaana | 59 % | **3,4 %** |
+| Kameraa liikutettaessa | 100 | 100 (muuttumaton) |
+| Nopeutetussa ajassa | 100 | 100 (muuttumaton) |
+
+Silmukka itse pyörii edelleen joka ruudunpäivityksellä: sen laskentaosuus —
+kaikkien kahdeksan planeetan ja Kuun sijainnit — on mitattuna 1,9
+mikrosekuntia eli 0,019 % kehysbudjetista, joten sen ohittamisesta ei olisi
+mitattavaa hyötyä. Kuormasta lähes kaikki on täyttörajoitteista piirtoa
+(1,28 ms/Mpx + 0,5 ms kiinteä).
+
 ### Toteutuksen reunaehdot
 
 - **Logaritminen syvyyspuskuri** (`logarithmicDepthBuffer`) on pakollinen:

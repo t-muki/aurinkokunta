@@ -4,6 +4,9 @@ Interaktiivinen kolmiulotteinen malli aurinkokunnasta. Planeettojen (ja Kuun)
 sijainnit lasketaan todellisen ajanhetken mukaan JPL:n likimääräisistä
 rataelementeistä.
 
+**➜ Malli pyörii selaimessa osoitteessa <https://t-muki.github.io/aurinkokunta/>**
+Mitään ei tarvitse asentaa, ja sivu toimii myös puhelimella.
+
 ## Käynnistys
 
 Sivu tarvitsee paikallisen web-palvelimen (ES-moduulit eivät toimi suoraan
@@ -24,7 +27,9 @@ ilman verkkoyhteyttä ulkopuolelle. Mukana on tyhjä `.nojekyll`, joka estää
 Jekyll-käsittelyn.
 
 Julkaisu: työnnä repo GitHubiin ja valitse *Settings → Pages → Source:
-Deploy from a branch → main / (root)*.
+Deploy from a branch → main / (root)*. Tämä repo on julkaistu osoitteeseen
+<https://t-muki.github.io/aurinkokunta/>, ja jokainen `main`-haaraan työnnetty
+commit päivittyy sinne muutamassa minuutissa.
 
 ## Ominaisuudet
 

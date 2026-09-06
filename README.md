@@ -7,30 +7,6 @@ rataelementeistä.
 **➜ Malli pyörii selaimessa osoitteessa <https://t-muki.github.io/aurinkokunta/>**
 Mitään ei tarvitse asentaa, ja sivu toimii myös puhelimella.
 
-## Käynnistys
-
-Sivu tarvitsee paikallisen web-palvelimen (ES-moduulit eivät toimi suoraan
-tiedostosta avattuna):
-
-```bash
-node server.js
-```
-
-Avaa sitten selaimessa <http://localhost:8321>.
-
-## Julkaisu GitHub Pagesiin
-
-Sivu on täysin staattinen eikä vaadi käännösvaihetta, joten se toimii Pagesissa
-sellaisenaan. Kaikki polut ovat suhteellisia ja kirjastot mukana `libs/`-
-kansiossa, joten sivu toimii myös alihakemistossa (`käyttäjä.github.io/repo/`)
-ilman verkkoyhteyttä ulkopuolelle. Mukana on tyhjä `.nojekyll`, joka estää
-Jekyll-käsittelyn.
-
-Julkaisu: työnnä repo GitHubiin ja valitse *Settings → Pages → Source:
-Deploy from a branch → main / (root)*. Tämä repo on julkaistu osoitteeseen
-<https://t-muki.github.io/aurinkokunta/>, ja jokainen `main`-haaraan työnnetty
-commit päivittyy sinne muutamassa minuutissa.
-
 ## Ominaisuudet
 
 - Planeettojen reaaliaikaiset sijainnit (JPL:n rataelementit, tarkkuus riittää
@@ -108,6 +84,23 @@ pysyvät luettavina sekä klikattavina, ja klikkaus lähentää kappaleeseen. Va
 täällä Kuu on oikealla etäisyydellään ja Aurinko näkyy Maasta oikean
 kokoisena (0,53°).
 
+## Tapahtumahaun tarkkuus
+
+Tapahtumat etsitään numeerisesti: kulmaa (esim. Kuun ja Auringon näennäinen
+etäisyys) askelletaan ajassa, ja merkinvaihdos tarkennetaan puolitushaulla.
+Päiväntasausten ja -seisausten kohdalla Auringon pituus muunnetaan J2000-
+epookista hetken omaan kevätpäiväntasauspisteeseen (prekessio ja aberraatio);
+ilman tätä ajat osuisivat n. 9 tuntia myöhään 2020-luvulla. Verrattuna
+julkaistuihin arvoihin:
+
+| Tapahtuma | Laskettu | Julkaistu |
+| --- | --- | --- |
+| Kesäpäivänseisaus 2026 | 21.6. klo 08.26 UTC | 21.6. klo 08.25 UTC |
+| Syyspäiväntasaus 2026 | 23.9. klo 00.16 UTC | 23.9. klo 00.05 UTC |
+| Kevätpäiväntasaus 2026 | 20.3. klo 14.42 UTC | 20.3. klo 14.46 UTC |
+
+Kuunvaiheiden tarkkuus on n. puoli tuntia (yksinkertaistetun kuuteorian raja).
+
 ## Suorituskyky
 
 Kuva piirretään vain kun se muuttuu. Reaaliajassa näkymä on käytännössä
@@ -171,6 +164,30 @@ mitattavaa hyötyä. Kuormasta lähes kaikki on täyttörajoitteista piirtoa
   voi näkyä nykimisenä, jos Neptunusta katsoo läheltä suurella aikanopeudella.
   Korjaus olisi liukuva origo.
 
+## Käynnistys
+
+Sivu tarvitsee paikallisen web-palvelimen (ES-moduulit eivät toimi suoraan
+tiedostosta avattuna):
+
+```bash
+node server.js
+```
+
+Avaa sitten selaimessa <http://localhost:8321>.
+
+## Julkaisu GitHub Pagesiin
+
+Sivu on täysin staattinen eikä vaadi käännösvaihetta, joten se toimii Pagesissa
+sellaisenaan. Kaikki polut ovat suhteellisia ja kirjastot mukana `libs/`-
+kansiossa, joten sivu toimii myös alihakemistossa (`käyttäjä.github.io/repo/`)
+ilman verkkoyhteyttä ulkopuolelle. Mukana on tyhjä `.nojekyll`, joka estää
+Jekyll-käsittelyn.
+
+Julkaisu: työnnä repo GitHubiin ja valitse *Settings → Pages → Source:
+Deploy from a branch → main / (root)*. Tämä repo on julkaistu osoitteeseen
+<https://t-muki.github.io/aurinkokunta/>, ja jokainen `main`-haaraan työnnetty
+commit päivittyy sinne muutamassa minuutissa.
+
 ## Lähteet
 
 - Planeettojen tekstuurit: [Solar System Scope](https://www.solarsystemscope.com/textures/) (CC BY 4.0)
@@ -181,20 +198,3 @@ mitattavaa hyötyä. Kuormasta lähes kaikki on täyttörajoitteista piirtoa
 - Kuun teoria: Paul Schlyterin yksinkertaistettu malli häiriötermeineen
 - Kolmiulotteisen grafiikan moottori: [Three.js](https://threejs.org/) r160
   (paikallisesti `libs/`-kansiossa)
-
-## Tapahtumahaun tarkkuus
-
-Tapahtumat etsitään numeerisesti: kulmaa (esim. Kuun ja Auringon näennäinen
-etäisyys) askelletaan ajassa, ja merkinvaihdos tarkennetaan puolitushaulla.
-Päiväntasausten ja -seisausten kohdalla Auringon pituus muunnetaan J2000-
-epookista hetken omaan kevätpäiväntasauspisteeseen (prekessio ja aberraatio);
-ilman tätä ajat osuisivat n. 9 tuntia myöhään 2020-luvulla. Verrattuna
-julkaistuihin arvoihin:
-
-| Tapahtuma | Laskettu | Julkaistu |
-| --- | --- | --- |
-| Kesäpäivänseisaus 2026 | 21.6. klo 08.26 UTC | 21.6. klo 08.25 UTC |
-| Syyspäiväntasaus 2026 | 23.9. klo 00.16 UTC | 23.9. klo 00.05 UTC |
-| Kevätpäiväntasaus 2026 | 20.3. klo 14.42 UTC | 20.3. klo 14.46 UTC |
-
-Kuunvaiheiden tarkkuus on n. puoli tuntia (yksinkertaistetun kuuteorian raja).

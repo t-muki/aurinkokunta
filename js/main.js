@@ -127,8 +127,18 @@ function toScene(p, out) {
 }
 
 // --- Perusnäkymä -----------------------------------------------------------
+// Selain voi ajaa sivun hetken nollan kokoisena: paneeli avautuu, välilehti on
+// piilossa tai kehys ei ole vielä asettunut. Silloin innerWidth/innerHeight
+// ovat 0, kuvasuhteesta tulisi NaN ja kameran sijainti laskettaisiin NaN:ksi.
+// Ruutu jäisi pysyvästi mustaksi, koska mikään ei laskisi sijaintia uudelleen.
+const viewW = () => Math.max(1, innerWidth);
+const viewH = () => Math.max(1, innerHeight);
+const viewportReady = () => innerWidth > 0 && innerHeight > 0;
+// Onko oikea koko jo nähty? Jos ei, rajaus lasketaan uudelleen kun se saadaan.
+let sizedOnce = viewportReady();
+
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 5000);
+const camera = new THREE.PerspectiveCamera(50, viewW() / viewH(), 0.1, 5000);
 camera.position.set(0, 130, 260);
 
 const app = document.getElementById('app');
@@ -137,12 +147,12 @@ const app = document.getElementById('app');
 // 0,005 ja kaukotason 2,5 miljoonaa yksikköä. Tavallisella syvyyspuskurilla
 // tuo suhde tuottaisi pahaa z-taistelua planeettojen pinnoilla.
 const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(viewW(), viewH());
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 app.appendChild(renderer.domElement);
 
 const labelRenderer = new CSS2DRenderer();
-labelRenderer.setSize(innerWidth, innerHeight);
+labelRenderer.setSize(viewW(), viewH());
 labelRenderer.domElement.id = 'labels';
 app.appendChild(labelRenderer.domElement);
 
@@ -703,7 +713,7 @@ app.addEventListener('pointerup', (e) => {
   const moved = Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]);
   downXY = null;
   if (moved > 5) return; // raahaus, ei klikkaus
-  pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  pointer.set((e.clientX / viewW()) * 2 - 1, -(e.clientY / viewH()) * 2 + 1);
   raycaster.setFromCamera(pointer, camera);
   const hit = raycaster.intersectObjects(pickables, false)[0];
   if (hit) selectBody(hit.object);
@@ -732,9 +742,9 @@ function computeGoal(useCurrentDistance) {
   focusObj.getWorldPosition(goalTarget);
   const dist = distanceFor(focusObj.userData.viewRadius);
 
-  if (innerWidth > 640) {
+  if (viewW() > 640) {
     const d = useCurrentDistance ? camera.position.distanceTo(controls.target) : dist;
-    const worldPerPx = 2 * Math.tan((camera.fov / 2) * DEG) * d / innerHeight;
+    const worldPerPx = 2 * Math.tan((camera.fov / 2) * DEG) * d / viewH();
 
     // Vaakasuunta: väistetään oikean laidan tietopaneelia
     if (sidePanelOpen()) {
@@ -743,7 +753,7 @@ function computeGoal(useCurrentDistance) {
     }
     // Pystysuunta: väistetään vasemman alalaidan aikapalkkia
     const barTop = timebar.getBoundingClientRect().top;
-    const liftPx = Math.min((innerHeight - barTop) / 2, innerHeight * 0.22);
+    const liftPx = Math.min((viewH() - barTop) / 2, viewH() * 0.22);
     camUp.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
     goalTarget.addScaledVector(camUp, -liftPx * worldPerPx);
   }
@@ -770,7 +780,7 @@ const IDLE_RENDER_INTERVAL = 250;
 // eroavat kuusi kertaluokkaa. Kohteen seurannassa kamera ja kappale liikkuvat
 // yhdessä, jolloin ruutusiirtymä jää alle kynnyksen eikä turhaa piirtoa tule.
 function cameraMovedVisibly() {
-  const pxPerRad = innerHeight / (2 * Math.tan((camera.fov / 2) * DEG));
+  const pxPerRad = viewH() / (2 * Math.tan((camera.fov / 2) * DEG));
   const dot = Math.min(1, Math.abs(lastRenderQuat.dot(camera.quaternion)));
   if (2 * Math.acos(dot) * pxPerRad > RENDER_PX_THRESHOLD) return true;
   const dist = Math.max(1e-9, camera.position.distanceTo(controls.target));
@@ -973,6 +983,11 @@ function applyScale(key) {
   // Kamera asetetaan suoraan eikä animoiden: mittakaava muuttuu useita
   // kertaluokkia, ja liuku näyttäisi hallitsemattomalta ryntäykseltä.
   // Kohdistettu kappale pysyy keskellä, vain sen koko muuttuu.
+  reframe();
+}
+
+// Asettaa kameran nykyisen näkymän mukaiseen rajaukseen ilman animaatiota.
+function reframe() {
   panOffset.set(0, 0, 0);
   camAnim = null;
   computeGoal(false);
@@ -987,9 +1002,15 @@ applyScale(scaleSelect.value);
 animate();
 
 addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
+  camera.aspect = viewW() / viewH();
   camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-  labelRenderer.setSize(innerWidth, innerHeight);
+  renderer.setSize(viewW(), viewH());
+  labelRenderer.setSize(viewW(), viewH());
+  // Jos sivu käynnistyi nollan kokoisena, rajaus laskettiin varakuvasuhteella.
+  // Lasketaan se uudelleen heti kun todellinen koko on tiedossa.
+  if (!sizedOnce && viewportReady()) {
+    sizedOnce = true;
+    reframe();
+  }
   markDirty();
 });

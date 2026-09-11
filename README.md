@@ -1,57 +1,30 @@
 # Aurinkokunta
 
-Interaktiivinen kolmiulotteinen malli aurinkokunnasta. Planeettojen (ja Kuun)
-sijainnit lasketaan todellisen ajanhetken mukaan JPL:n likimääräisistä
-rataelementeistä.
+Interaktiivinen kolmiulotteinen malli aurinkokunnasta. Planeettojen ja Kuun
+sijainnit lasketaan valitulle ajanhetkelle todellisista ratatiedoista.
 
 **➜ Malli pyörii selaimessa osoitteessa <https://t-muki.github.io/aurinkokunta/>**
 Mitään ei tarvitse asentaa, ja sivu toimii myös puhelimella.
 
 ## Ominaisuudet
 
-- Planeettojen reaaliaikaiset sijainnit (JPL:n rataelementit, tarkkuus riittää
-  visualisointiin vuosina 1800–2050)
-- Kolme valittavaa mittakaavaa: havainnollinen, oikeat kokosuhteet ja täysi
-  1:1-mittakaava, jossa myös kiertoradat ovat oikeassa suhteessa kappaleisiin.
-  Ks. [Mittakaavat](#mittakaavat)
-- Kuu Maan kiertolaisena, sijainti laskettuna häiriötermeineen (tarkistettu
-  tunnettuja uuden- ja täydenkuun hetkiä vasten)
-- Vapaa pyöritys, lähennys ja panorointi hiirellä (OrbitControls)
-- Aikakontrollit: pysäytys/jatka, nopeuden säätö (−1 v/s … +1 v/s),
-  päivämäärään siirtyminen, paluu nykyhetkeen. Pysäytys lukitsee juuri sen
-  hetken, ja jatkaminen lähtee siitä eteenpäin — ei hyppää nykyhetkeen
-- Aikasiirtymät kelataan: aika liukuu kohdehetkeen 1,8–3,0 sekunnissa pehmeästi
-  kiihtyen ja hidastuen, jolloin planeettojen liike matkan varrella näkyy.
-  Kesto kasvaa hypyn pituuden mukaan. Nopeussäätimen koskettaminen keskeyttää
-  kelauksen välittömästi
-- Tähtitaivas on NASA:n Deep Star Maps 2020 -kartta, jossa tähdet ovat
-  todellisilla paikoillaan (Hipparcos/Tycho-2). Suuntaus on varmistettu
-  18 kirkkaan tähden sijainneilla, ja tähtikuviot ovat oikeinpäin myös
-  peilautumisen osalta. ✶-painikkeella saa tähdistöviivat näkyviin ja pois
-- Oikean alanurkan info-painike avaa paneelin, jossa on käyttöohjeet,
-  mittakaavojen selitys, laskennan tarkkuustiedot sekä lähteet ja lisenssit
-- Jokaisesta kappaleesta on viisi faktaa, joista näytetään aina seuraava, kun
-  kappaletta klikkaa uudelleen. Tekstit ovat tiedostossa `js/facts.js`, ja
-  listoihin saa vapaasti lisätä uusia
-- Planeetan klikkaus avaa tietopaneelin, zoomaa kohteeseen ja lukitsee kameran
-  seuraamaan sitä. Panorointi (oikea hiirinäppäin tai ctrl/shift + veto) säilyy
-  seurannan aikana, ja saman kohteen klikkaus keskittää sen uudelleen. Rajaus väistää käyttöliittymäpaneeleita, joten kohde asettuu
-  vapaan alueen keskelle. Painike *Koko aurinkokunta* (tai Esc) palauttaa
-  kokonaiskuvaan, *Sisäplaneetat* rajaa näkymän Marsin radan sisäpuolelle.
-  Yleisnäkymien etäisyys lasketaan kuvakulmasta ja ikkunan mittasuhteista,
-  joten rajaus pysyy oikeana myös ikkunan kokoa muutettaessa
-- Tapahtumahypyt edelliseen ja seuraavaan: täysikuu/uusikuu,
-  päivänseisaus/-tasaus sekä Marsin, Jupiterin ja Saturnuksen oppositiot.
-  Kukin painikepari siirtyy siihen ryhmän tapahtumaan, joka tulee ensin.
-  Kontrollit ovat haitarin takana, aikasäätimet aina näkyvissä. Löytyneen
-  tapahtuman nimi näkyy kelauksen ajan ja häipyy, kun ajassa on siirrytty
-  yli 12 tuntia sen hetkestä
-- Nimilaput, kiertoradat, Saturnuksen renkaat, akselikallistukset ja
-  pyörähdysliike
-- Maan pyörähdysasento on kalibroitu todelliseen aurinkoaikaan (keskiaurinko,
-  tarkkuus n. ±4° eli ±15 min ajantasauksen verran), ja akselikallistus
-  osoittaa oikeaan suuntaan, joten vuorokaudenajat ja vuodenajat näkyvät
-  oikein — muiden planeettojen pyörähdysvaihe on mielivaltainen
+- **Reaaliaikaiset sijainnit.** Planeetat ja Kuu ovat siellä missä ne kulloinkin
+  ovat. Ajassa voi liikkua vapaasti: pysäyttää, säätää nopeutta väliltä
+  −1…+1 vuotta sekunnissa tai siirtyä suoraan haluttuun päivämäärään.
+- **Tapahtumahypyt.** Edelliseen tai seuraavaan täysikuuhun, uuteenkuuhun,
+  päivänseisaukseen, päiväntasaukseen sekä Marsin, Jupiterin ja Saturnuksen
+  oppositioon. Aika kelautuu kohteeseen parissa sekunnissa, jolloin
+  planeettojen liike matkan varrella näkyy.
+- **Kolme mittakaavaa:** havainnollinen, oikeat kokosuhteet ja täysi
+  1:1-mittakaava. Ks. [Mittakaavat](#mittakaavat).
+- **Todellinen tähtitaivas.** NASA:n Deep Star Maps 2020, jossa tähdet ovat
+  oikeilla paikoillaan. ✶-painike näyttää tähdistöviivat ja piilottaa ne.
+- **Klikkaa kappaletta** niin kamera lähenee siihen ja seuraa sitä. Sivupaneeli
+  kertoo perustiedot ja vaihtuvan faktan; jokaisesta kappaleesta on viisi.
+- **Maan vuorokausi ja vuodenajat.** Pyörähdysasento on sidottu aurinkoaikaan ja
+  akselikallistus osoittaa oikeaan suuntaan, joten valoisa puoli on oikea.
+  Muiden planeettojen pyörähdysvaihe on mielivaltainen.
+- Nimilaput, kiertoradat, Saturnuksen renkaat ja akselikallistukset.
 
 ## Mittakaavat
 
@@ -65,33 +38,39 @@ vain koot ja etäisyydet muuttuvat.
 | Etäisyys | ∝ AU^0,55 | ∝ AU^0,55 | ∝ AU (oikea) |
 | Aurinko mittakaavassa | ei | kyllä | kyllä |
 | Kuun etäisyys Maasta | 3,2 Maan sädettä | 12,8 | 60,3 (oikea) |
-| Yksikkö | mielivaltainen | mielivaltainen | Maan säde (6371 km) |
 
-Yksikköpalloista ja skaalauksesta johtuen tilan vaihto ei rakenna geometriaa
-uudelleen: päivitetään vain skaalaukset, nimilappujen sijainnit ja ratapisteet.
-
-*Havainnollinen* on oletus, ja se vastaa mallin aiempaa ainoaa mittakaavaa.
+*Havainnollinen* on oletus: kaikki mahtuu samaan kuvaan ja näkyy kerralla.
 
 *Oikeat kokosuhteet* on ainoa tila, jossa kokoerot näkyvät samassa kuvassa.
-Kerroin on valittu niin, että Aurinko (10,9 yksikköä) mahtuu selvästi
-Merkuriuksen perihelin (17,8) sisään. Kokonaiskuvassa Aurinko on n. 110 px,
-Jupiter 8 px ja Maa 1 px.
+Aurinko on halkaisijaltaan 109 Maata ja Jupiterkin vain kymmenesosa Auringosta.
 
 *Täysi mittakaava* on 1:1 sekä koossa että etäisyydessä. Kokonaiskuvassa jopa
-Aurinko on 0,35 px ja planeetat tuhannesosia pikselistä — mitattu arvo, ei
-arvio. Tila on silti käyttökelpoinen, koska nimilaput ovat DOM-elementtejä ja
-pysyvät luettavina sekä klikattavina, ja klikkaus lähentää kappaleeseen. Vasta
-täällä Kuu on oikealla etäisyydellään ja Aurinko näkyy Maasta oikean
-kokoisena (0,53°).
+Aurinko on kolmasosa pikselistä ja planeetat tuhannesosia — aurinkokunta on
+lähes tyhjä, eikä sitä voi kiertää. Nimilaput merkitsevät paikat, ja niitä
+klikkaamalla pääsee lähentymään. Vasta tässä tilassa Kuu on oikealla
+etäisyydellään ja Aurinko näkyy Maasta oikean kokoisena, puolen asteen
+levyisenä.
 
-## Tapahtumahaun tarkkuus
+## Tarkkuus
 
-Tapahtumat etsitään numeerisesti: kulmaa (esim. Kuun ja Auringon näennäinen
-etäisyys) askelletaan ajassa, ja merkinvaihdos tarkennetaan puolitushaulla.
-Päiväntasausten ja -seisausten kohdalla Auringon pituus muunnetaan J2000-
-epookista hetken omaan kevätpäiväntasauspisteeseen (prekessio ja aberraatio);
-ilman tätä ajat osuisivat n. 9 tuntia myöhään 2020-luvulla. Verrattuna
-julkaistuihin arvoihin:
+Sijainnit perustuvat JPL:n likimääräisiin rataelementteihin (*Approximate
+Positions of the Planets*, taulukko vuosille 1800–2050). **Kyseessä ei ole
+täsmällinen efemeridi vaan sekulaarinen approksimaatio:** rataelementit
+kehitetään lineaarisesti J2000-epookista, eikä planeettojen keskinäisiä
+häiriöitä — kuten Jupiterin ja Saturnuksen suurta epätasaisuutta — ole
+mallinnettu. JPL ilmoittaa taulukolleen suurimmiksi virheiksi heliosentrisessä
+pituudessa 40″ Marsille, 400″ Jupiterille ja 600″ Saturnukselle.
+
+Tapahtumat etsitään numeerisesti: kulmaa askelletaan ajassa ja merkinvaihdos
+tarkennetaan puolitushaulla. Haku itsessään on sekunnin tarkkuudella, mutta
+tuloksen tarkkuus rajoittuu rataelementteihin. **Ohjelma näyttää ajat minuutin
+tarkkuudella, mutta kaikki eivät ole minuutin tarkkuudella oikein.**
+
+### Päiväntasaukset ja -seisaukset: 1–11 minuuttia
+
+Auringon pituus muunnetaan J2000-epookista hetken omaan
+kevätpäiväntasauspisteeseen (prekessio ja aberraatio); ilman tätä ajat
+osuisivat n. 9 tuntia myöhään 2020-luvulla.
 
 | Tapahtuma | Laskettu | Julkaistu |
 | --- | --- | --- |
@@ -99,75 +78,38 @@ julkaistuihin arvoihin:
 | Syyspäiväntasaus 2026 | 23.9. klo 00.16 UTC | 23.9. klo 00.05 UTC |
 | Kevätpäiväntasaus 2026 | 20.3. klo 14.42 UTC | 20.3. klo 14.46 UTC |
 
-Kuunvaiheiden tarkkuus on n. puoli tuntia (yksinkertaistetun kuuteorian raja).
+### Oppositiot: minuutista kahteen tuntiin
 
-## Suorituskyky
+Tämä on mallin suurin virhelähde, ja virhe kasvaa ulospäin mentäessä:
 
-Kuva piirretään vain kun se muuttuu. Reaaliajassa näkymä on käytännössä
-liikkumaton — mitattuna nopeimman kappaleen siirtymä on 0,001 pikseliä
-kymmenessä sekunnissa, eli yhteen pikseliin kuluisi noin kolme tuntia — joten
-saman kuvan piirtäminen sata kertaa sekunnissa on pelkkää lämpöä.
+| Oppositio | Laskettu | Julkaistu | Ero |
+| --- | --- | --- | --- |
+| Mars 19.2.2027 | klo 15.44 UTC | klo 15.45 UTC | 1 min |
+| Jupiter 11.2.2027 | klo 01.05 UTC | klo 00.21 UTC | 44 min |
+| Saturnus 4.10.2026 | klo 14.11 UTC | klo 12.29 UTC | 1 h 42 min |
 
-Piirto tapahtuu, jos jokin pätee: kamera on liikkunut yli 0,3 pikseliä
-ruudulla, kamera-animaatio tai ajan kelaus on kesken, aika on nopeutettu, jokin
-tapahtuma on nostanut lipun (koon muutos, mittakaavan vaihto, tekstuurin
-valmistuminen, taivaskartan vaihto), tai edellisestä piirrosta on yli 250 ms.
-Viimeinen ehto on turvaverkko: vaikka jokin herätesignaali jäisi huomaamatta,
-kuva korjautuu neljännessekunnissa.
+JPL:n virherajoista laskettuna pahin mahdollinen poikkeama on Marsilla noin
+puoli tuntia, Jupiterilla kolme tuntia ja Saturnuksella neljä tuntia. Malli ei
+myöskään korjaa valon kulkuaikaa, mikä siirtää Marsin oppositiota noin
+4 minuuttia.
 
-Kameran liikkeen kynnys mitataan ruutupikseleinä eikä maailman yksiköinä, koska
-mittakaavatilojen yksiköt eroavat kuusi kertaluokkaa.
+Oikea korjaus olisi vaihtaa tarkempaan ratateoriaan, esimerkiksi typistettyyn
+VSOP87:ään, joka pudottaisi virheet kaarisekunteihin.
 
-Mitattu vaikutus (100 Hz näyttö, 4,2 Mpx kehyksessä):
+### Muut
 
-| | Ennen | Jälkeen |
-| --- | --- | --- |
-| Piirtoja sekunnissa joutilaana | 100 | **4** |
-| GPU-kuorma joutilaana | 59 % | **3,4 %** |
-| Kameraa liikutettaessa | 100 | 100 (muuttumaton) |
-| Nopeutetussa ajassa | 100 | 100 (muuttumaton) |
-
-Silmukka itse pyörii edelleen joka ruudunpäivityksellä: sen laskentaosuus —
-kaikkien kahdeksan planeetan ja Kuun sijainnit — on mitattuna 1,9
-mikrosekuntia eli 0,019 % kehysbudjetista, joten sen ohittamisesta ei olisi
-mitattavaa hyötyä. Kuormasta lähes kaikki on täyttörajoitteista piirtoa
-(1,28 ms/Mpx + 0,5 ms kiinteä).
-
-### Toteutuksen reunaehdot
-
-- **Logaritminen syvyyspuskuri** (`logarithmicDepthBuffer`) on pakollinen:
-  täysi mittakaava tarvitsee yhtä aikaa lähitason 0,006 ja kaukotason
-  2,5 · 10⁶ yksikköä.
-- **Lähitaso lasketaan katse-etäisyydestä** joka kehyksessä
-  (`katse-etäisyys · 10⁻³`, vähintään 0,005). Kiinteä lähitaso ei voi palvella
-  yhtä aikaa Kuun pintaa ja Neptunuksen rataa.
-- **Taivaspallo seuraa kameraa** eikä osallistu syvyyspuskuriin
-  (`depthTest: false`, `renderOrder = -1`). Kameran mukana liikkuminen poistaa
-  tähtien virheellisen parallaksin — tähdet ovat käytännössä äärettömän
-  kaukana. Syvyyspuskurin ulkopuolelle jättäminen on välttämätöntä, koska
-  kaukotasolla syvyysarvot saturoituvat ja osa pallon kolmioista jäisi
-  piirtymättä.
-- **Ratojen tarkkuus skaalautuu mittakaavan mukaan.** Murtoviivan jänne
-  oikaisee kaarta noin `R·π²/(2N²)`. Täydessä mittakaavassa radan ja kappaleen
-  kokojen suhde on jopa 180 000-kertainen, joten kiinteä 360 jakoa jättäisi
-  viivan Maan radalla 0,9 Maan sädettä sisäpuolelle — planeetan reunaan.
-  Jakojen määrä lasketaan planeettakohtaisesti (1 658–6 719) niin, että
-  oikaisu jää kahteen prosenttiin kappaleen säteestä. Mitattu poikkeama on
-  0,004–0,021 sädettä.
-- **Kuun rataviiva lasketaan samasta kuuteoriasta kuin Kuun sijainti.** Rata
-  on 5,15° kallellaan ekliptikaan, joten tasoon piirretty ympyrä jätti Kuun
-  jopa 20 Kuun sädettä sivuun. Viiva päivitetään, kun aika on siirtynyt yli
-  10 vuorokautta, koska nouseva solmu kiertää 18,6 vuodessa.
-- **Tunnettu rajoite:** täydessä mittakaavassa Neptunus on 700 000 yksikön
-  päässä, ja koska three.js välittää matriisit `Float32Array`ina, sen sijainti
-  kvantittuu 0,0625 yksikön (398 km, 1,6 % planeetan säteestä) askeliin. Tämä
-  voi näkyä nykimisenä, jos Neptunusta katsoo läheltä suurella aikanopeudella.
-  Korjaus olisi liukuva origo.
+| | Tarkkuus |
+| --- | --- |
+| Kuunvaiheet | n. puoli tuntia |
+| Kuun sijainti | n. 0,5° (yksinkertaistetun kuuteorian raja) |
+| Maan pyörähdysasento | ±4° eli ±15 min (ajantasaus jätetty huomiotta) |
+| Tähtitaivaan suuntaus | tarkistettu 18 kirkkaan tähden sijainneilla |
 
 ## Käynnistys
 
-Sivu tarvitsee paikallisen web-palvelimen (ES-moduulit eivät toimi suoraan
-tiedostosta avattuna):
+Sivua ei voi avata suoraan tiedostosta: ES-moduulit ovat CORS-sääntöjen
+alaisia, joten selain estää ne `file://`-osoitteesta. Tarvitaan siis paikallinen
+web-palvelin:
 
 ```bash
 node server.js
@@ -177,24 +119,27 @@ Avaa sitten selaimessa <http://localhost:8321>.
 
 ## Julkaisu GitHub Pagesiin
 
-Sivu on täysin staattinen eikä vaadi käännösvaihetta, joten se toimii Pagesissa
-sellaisenaan. Kaikki polut ovat suhteellisia ja kirjastot mukana `libs/`-
-kansiossa, joten sivu toimii myös alihakemistossa (`käyttäjä.github.io/repo/`)
-ilman verkkoyhteyttä ulkopuolelle. Mukana on tyhjä `.nojekyll`, joka estää
-Jekyll-käsittelyn.
+Sivu on täysin staattinen eikä vaadi käännösvaihetta. Kaikki polut ovat
+suhteellisia ja kirjastot mukana `libs/`-kansiossa, joten sivu toimii myös
+alihakemistossa ilman verkkoyhteyttä ulkopuolelle. Mukana on tyhjä
+`.nojekyll`, joka estää Jekyll-käsittelyn.
 
-Julkaisu: työnnä repo GitHubiin ja valitse *Settings → Pages → Source:
-Deploy from a branch → main / (root)*. Tämä repo on julkaistu osoitteeseen
+Julkaisu: työnnä repo GitHubiin ja valitse *Settings → Pages → Source: Deploy
+from a branch → main / (root)*. Tämä repo on julkaistu osoitteeseen
 <https://t-muki.github.io/aurinkokunta/>, ja jokainen `main`-haaraan työnnetty
 commit päivittyy sinne muutamassa minuutissa.
 
+## Toteutus
+
+Sisäiset ratkaisut ja niiden perustelut — mittakaavatilojen vaihto, ratojen
+piirtotarkkuus, syvyyspuskuri ja piirron rajoitus — ovat omassa
+tiedostossaan: [TOTEUTUS.md](TOTEUTUS.md).
+
 ## Lähteet
 
+- Ratalaskenta: JPL, [*Approximate Positions of the Planets*](https://ssd.jpl.nasa.gov/planets/approx_pos.html)
+- Kuun teoria: Paul Schlyterin yksinkertaistettu malli häiriötermeineen
 - Planeettojen tekstuurit: [Solar System Scope](https://www.solarsystemscope.com/textures/) (CC BY 4.0)
 - Tähtitaivas ja tähdistöviivat: [NASA/Goddard SVS, Deep Star Maps 2020](https://svs.gsfc.nasa.gov/4851)
   (Ernie Wright; julkinen aineisto)
-- Ratalaskenta: JPL, "Approximate Positions of the Planets" (Keplerin
-  rataelementit epookille J2000)
-- Kuun teoria: Paul Schlyterin yksinkertaistettu malli häiriötermeineen
-- Kolmiulotteisen grafiikan moottori: [Three.js](https://threejs.org/) r160
-  (paikallisesti `libs/`-kansiossa)
+- Grafiikkamoottori: [Three.js](https://threejs.org/) r160 (mukana `libs/`-kansiossa)

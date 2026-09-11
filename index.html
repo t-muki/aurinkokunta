@@ -126,12 +126,25 @@
 
     <h3>Tarkkuus</h3>
     <p>Sijainnit perustuvat JPL:n likimääräisiin rataelementteihin, jotka pätevät
-       vuosina 1800–2050. Laskenta on tarkistettu tunnettuja arvoja vasten:</p>
+       vuosina 1800–2050. Kyseessä ei ole täsmällinen efemeridi vaan sekulaarinen
+       approksimaatio: elementit kehitetään lineaarisesti J2000-epookista, eikä
+       planeettojen keskinäisiä häiriöitä ole mallinnettu. JPL ilmoittaa
+       taulukolleen suurimmiksi virheiksi heliosentrisessä pituudessa 40″
+       Marsille, 400″ Jupiterille ja 600″ Saturnukselle.</p>
+    <p>Ohjelma näyttää tapahtumien ajat minuutin tarkkuudella, mutta kaikki eivät
+       ole minuutin tarkkuudella oikein. Vertailu julkaistuihin arvoihin:</p>
     <dl>
       <dt>Kuun vaiheet</dt>
-      <dd>Uusikuu 6.1.2000 osui 0,00° ja täysikuu 21.1.2000 0,02° tarkkuudella</dd>
+      <dd>Uusikuu 6.1.2000 osui 0,00° ja täysikuu 21.1.2000 0,02° tarkkuudella;
+          ajallisesti noin puoli tuntia</dd>
       <dt>Päiväntasaukset ja seisaukset</dt>
       <dd>1–11 minuutin sisällä julkaistuista ajoista</dd>
+      <dt>Oppositiot — suurin virhelähde</dt>
+      <dd>Mars 19.2.2027 osuu minuutilleen, mutta Jupiter 11.2.2027 on 44 minuuttia
+          ja Saturnus 4.10.2026 lähes kaksi tuntia myöhässä. JPL:n virherajoista
+          laskettuna pahin mahdollinen poikkeama on Marsilla noin puoli tuntia,
+          Jupiterilla kolme ja Saturnuksella neljä tuntia. Valon kulkuaikaa ei
+          myöskään korjata, mikä on Marsilla noin 4 minuuttia.</dd>
       <dt>Kuun sijainti</dt>
       <dd>Noin 0,5°, mikä on yksinkertaistetun kuuteorian raja</dd>
     </dl>
